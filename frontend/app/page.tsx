@@ -15,6 +15,35 @@ const checkerboard = {
 
 type Status = "idle" | "loading" | "done" | "error";
 
+function AppMark() {
+  return (
+    <span className="app-mark" aria-hidden="true">
+      <svg viewBox="0 0 28 28" fill="none">
+        <rect x="1" y="1" width="26" height="26" rx="7" fill="currentColor" />
+        <path d="M8 9.25h12M8 14h8M8 18.75h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="m18.5 16.5 1.2 2.3 2.3 1.2-2.3 1.2-1.2 2.3-1.2-2.3-2.3-1.2 2.3-1.2 1.2-2.3Z" fill="#D8F1DF" />
+      </svg>
+    </span>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M20 25V7m0 0-6 6m6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 23v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
@@ -24,7 +53,6 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Bersihkan object URL supaya tidak bocor memori
   useEffect(() => {
     return () => {
       if (originalUrl) URL.revokeObjectURL(originalUrl);
@@ -81,7 +109,6 @@ export default function Home() {
     if (dropped) process(dropped);
   };
 
-  // Tempel gambar dari clipboard (Ctrl+V)
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const item = Array.from(e.clipboardData?.items ?? []).find((i) =>
@@ -108,132 +135,152 @@ export default function Home() {
     : "no-bg.png";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-5 py-12 text-stone-900">
-      <header className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Hapus background gambar
-        </h1>
-        <p className="mt-3 max-w-xl text-stone-600">
-          Unggah foto, dapatkan PNG dengan background transparan. File diproses
-          di server dan tidak disimpan.
-        </p>
+    <main className="app-shell">
+      <header className="app-header">
+        <a href="/" className="app-brand" aria-label="Remove BG">
+          <AppMark />
+          <span>remove-bg</span>
+        </a>
+        <span className="header-label">IMAGE TOOL</span>
       </header>
 
-      {status === "idle" && (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-          }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-20 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
-            dragging
-              ? "border-teal-700 bg-teal-50"
-              : "border-stone-300 bg-white hover:border-stone-400"
-          }`}
-        >
-          <p className="text-lg font-medium">Tarik gambar ke sini</p>
-          <p className="mt-1 text-sm text-stone-500">
-            atau klik untuk memilih file, atau tempel dengan Ctrl+V. JPG, PNG,
-            WebP, maksimal 10 MB.
-          </p>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const picked = e.target.files?.[0];
-              if (picked) process(picked);
-            }}
-          />
+      <section className="tool-area">
+        <div className="tool-heading">
+          <div>
+            <h1>Hapus background</h1>
+            <p>Ubah gambar menjadi PNG dengan background transparan.</p>
+          </div>
+          <span className="privacy-label">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+              <path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            File tidak disimpan
+          </span>
         </div>
-      )}
 
-      {status !== "idle" && (
-        <section>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <figure>
-              <figcaption className="mb-2 text-sm font-medium text-stone-600">
-                Asli
-              </figcaption>
-              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-stone-200">
-                {originalUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={originalUrl}
-                    alt="Gambar asli"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                )}
-              </div>
-            </figure>
-
-            <figure>
-              <figcaption className="mb-2 text-sm font-medium text-stone-600">
-                Hasil
-              </figcaption>
-              <div
-                style={checkerboard}
-                className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl"
-              >
-                {status === "loading" && (
-                  <div className="flex flex-col items-center gap-3 rounded-xl bg-white/90 px-5 py-4 text-sm">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-stone-300 border-t-teal-700" />
-                    Memproses, biasanya 2-5 detik
-                  </div>
-                )}
-                {status === "done" && resultUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={resultUrl}
-                    alt="Gambar tanpa background"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                )}
-                {status === "error" && (
-                  <p className="max-w-xs rounded-xl bg-white/95 px-4 py-3 text-center text-sm text-red-700">
-                    {error}
-                  </p>
-                )}
-              </div>
-            </figure>
+        {status === "idle" && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+            }}
+            className={`upload-area ${dragging ? "is-dragging" : ""}`}
+          >
+            <div className="upload-icon"><UploadIcon /></div>
+            <h2>Tarik gambar ke sini</h2>
+            <p>atau pilih gambar dari perangkat kamu</p>
+            <span className="select-file-button">Pilih gambar</span>
+            <div className="file-guidance">
+              <span>JPG</span>
+              <span>PNG</span>
+              <span>WEBP</span>
+              <i />
+              <span>Maks. 10 MB</span>
+            </div>
+            <span className="paste-guidance">Bisa juga paste gambar dengan <kbd>Ctrl</kbd> + <kbd>V</kbd></span>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const picked = e.target.files?.[0];
+                if (picked) process(picked);
+              }}
+            />
           </div>
+        )}
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            {status === "done" && resultUrl && (
-              <a
-                href={resultUrl}
-                download={downloadName}
-                className="rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
-              >
-                Unduh PNG
-              </a>
-            )}
-            {status === "error" && file && (
-              <button
-                onClick={() => process(file)}
-                className="rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800"
-              >
-                Coba lagi
-              </button>
-            )}
-            <button
-              onClick={reset}
-              className="rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-stone-50"
-            >
-              Gambar lain
-            </button>
-          </div>
-        </section>
-      )}
+        {status !== "idle" && (
+          <section className="result-area" aria-live="polite">
+            <div className="result-heading">
+              <div className="file-detail">
+                <span className="file-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <rect x="2.5" y="2.5" width="15" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.3" />
+                    <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+                    <path d="m4.5 15 4-4 2.5 2 2.5-3 2 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>{file?.name ?? "Gambar"}</strong>
+                  <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "File gambar"}</span>
+                </div>
+              </div>
+              <span className={`status-label status-${status}`}>
+                <i />
+                {status === "loading" ? "Memproses" : status === "done" ? "Selesai" : "Gagal"}
+              </span>
+            </div>
+
+            <div className="preview-grid">
+              <figure className="preview-card">
+                <figcaption><span>Gambar asli</span></figcaption>
+                <div className="preview-canvas original-canvas">
+                  {originalUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={originalUrl} alt="Gambar asli" />
+                  )}
+                </div>
+              </figure>
+              <figure className="preview-card">
+                <figcaption><span>Background transparan</span></figcaption>
+                <div className="preview-canvas result-canvas" style={checkerboard}>
+                  {status === "loading" && (
+                    <div className="processing-state">
+                      <span className="loading-spinner" />
+                      <strong>Menghapus background...</strong>
+                      <small>Mohon tunggu sebentar</small>
+                    </div>
+                  )}
+                  {status === "done" && resultUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={resultUrl} alt="Gambar tanpa background" />
+                  )}
+                  {status === "error" && (
+                    <div className="error-state">
+                      <strong>Gambar gagal diproses</strong>
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+              </figure>
+            </div>
+
+            <div className="result-actions">
+              {status === "done" && resultUrl && (
+                <a href={resultUrl} download={downloadName} className="primary-button">
+                  <DownloadIcon />
+                  Download PNG
+                </a>
+              )}
+              {status === "error" && file && (
+                <button onClick={() => process(file)} className="primary-button">Coba lagi</button>
+              )}
+              <button onClick={reset} className="secondary-button">Pilih gambar lain</button>
+            </div>
+          </section>
+        )}
+
+        <div className="tool-footnote">
+          <span>Powered by AI background removal</span>
+          <span>PNG · Transparent</span>
+        </div>
+      </section>
+
+      <footer className="app-footer">
+        <span>remove-bg</span>
+        <span>Simple image processing tool</span>
+      </footer>
     </main>
   );
 }
