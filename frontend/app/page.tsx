@@ -15,12 +15,13 @@ const checkerboard = {
 
 type Status = "idle" | "loading" | "done" | "error";
 
-function SparkleMark() {
+function AppMark() {
   return (
-    <span className="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 32 32" fill="none">
-        <path d="M16 2.5 19.4 12.6 29.5 16l-10.1 3.4L16 29.5l-3.4-10.1L2.5 16l10.1-3.4L16 2.5Z" fill="currentColor" />
-        <path d="m25.5 2 .9 3.6L30 6.5l-3.6.9-.9 3.6-.9-3.6-3.6-.9 3.6-.9.9-3.6Z" fill="currentColor" />
+    <span className="app-mark" aria-hidden="true">
+      <svg viewBox="0 0 28 28" fill="none">
+        <rect x="1" y="1" width="26" height="26" rx="7" fill="currentColor" />
+        <path d="M8 9.25h12M8 14h8M8 18.75h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="m18.5 16.5 1.2 2.3 2.3 1.2-2.3 1.2-1.2 2.3-1.2-2.3-2.3-1.2 2.3-1.2 1.2-2.3Z" fill="#D8F1DF" />
       </svg>
     </span>
   );
@@ -28,9 +29,17 @@ function SparkleMark() {
 
 function UploadIcon() {
   return (
-    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path d="M24 31V8m0 0-8 8m8-8 8 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 28v9a4 4 0 0 0 4 4h22a4 4 0 0 0 4-4v-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M20 25V7m0 0-6 6m6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 23v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -126,49 +135,28 @@ export default function Home() {
     : "no-bg.png";
 
   return (
-    <main className="min-h-screen overflow-hidden">
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
-
-      <header className="site-header">
-        <a href="/" className="brand" aria-label="Remove.bg home">
-          <SparkleMark />
-          <span>remove<span className="brand-dot">.</span>bg</span>
+    <main className="app-shell">
+      <header className="app-header">
+        <a href="/" className="app-brand" aria-label="Remove BG">
+          <AppMark />
+          <span>remove-bg</span>
         </a>
-        <nav className="header-nav" aria-label="Navigasi utama">
-          <a href="#cara-kerja">Cara kerja</a>
-          <a href="#tentang">Tentang</a>
-        </nav>
-        <a href="#workspace" className="header-cta">
-          Mulai gratis <span aria-hidden="true">↗</span>
-        </a>
+        <span className="header-label">IMAGE TOOL</span>
       </header>
 
-      <section className="hero-section">
-        <div className="eyebrow"><span className="eyebrow-dot" /> AI IMAGE TOOLKIT</div>
-        <h1>
-          Background hilang.
-          <br />
-          <span>Fokus tetap pada objek.</span>
-        </h1>
-        <p className="hero-copy">
-          Hapus background foto dalam hitungan detik. Hasilkan gambar PNG
-          transparan yang siap digunakan di mana saja.
-        </p>
-        <div className="hero-points">
-          <span><i>✓</i> Gratis digunakan</span>
-          <span><i>✓</i> Tanpa perlu daftar</span>
-          <span><i>✓</i> Hasil PNG transparan</span>
-        </div>
-      </section>
-
-      <section id="workspace" className="workspace-section">
-        <div className="workspace-heading">
+      <section className="tool-area">
+        <div className="tool-heading">
           <div>
-            <span className="section-kicker">WORKSPACE</span>
-            <h2>Mulai dengan gambar kamu</h2>
+            <h1>Hapus background</h1>
+            <p>Ubah gambar menjadi PNG dengan background transparan.</p>
           </div>
-          <span className="privacy-note"><span>♧</span> File tidak disimpan</span>
+          <span className="privacy-label">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+              <path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            File tidak disimpan
+          </span>
         </div>
 
         {status === "idle" && (
@@ -185,16 +173,20 @@ export default function Home() {
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
             }}
-            className={`upload-card ${dragging ? "is-dragging" : ""}`}
+            className={`upload-area ${dragging ? "is-dragging" : ""}`}
           >
-            <div className="upload-icon-wrap"><UploadIcon /></div>
-            <h3>Tarik & letakkan gambar di sini</h3>
-            <p>atau pilih file dari perangkat kamu</p>
-            <span className="choose-file-button">Pilih gambar <span aria-hidden="true">→</span></span>
-            <div className="upload-meta">
-              <span>JPG</span><span>PNG</span><span>WEBP</span><span>Maks. 10 MB</span>
+            <div className="upload-icon"><UploadIcon /></div>
+            <h2>Tarik gambar ke sini</h2>
+            <p>atau pilih gambar dari perangkat kamu</p>
+            <span className="select-file-button">Pilih gambar</span>
+            <div className="file-guidance">
+              <span>JPG</span>
+              <span>PNG</span>
+              <span>WEBP</span>
+              <i />
+              <span>Maks. 10 MB</span>
             </div>
-            <div className="paste-hint">Tips: kamu juga bisa paste gambar dengan <kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+            <span className="paste-guidance">Bisa juga paste gambar dengan <kbd>Ctrl</kbd> + <kbd>V</kbd></span>
             <input
               ref={inputRef}
               type="file"
@@ -209,20 +201,30 @@ export default function Home() {
         )}
 
         {status !== "idle" && (
-          <section className="result-workspace" aria-live="polite">
-            <div className="result-topbar">
-              <div>
-                <span className="section-kicker">IMAGE PREVIEW</span>
-                <p className="filename">{file?.name}</p>
+          <section className="result-area" aria-live="polite">
+            <div className="result-heading">
+              <div className="file-detail">
+                <span className="file-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <rect x="2.5" y="2.5" width="15" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.3" />
+                    <circle cx="7" cy="7" r="1.5" fill="currentColor" />
+                    <path d="m4.5 15 4-4 2.5 2 2.5-3 2 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>{file?.name ?? "Gambar"}</strong>
+                  <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "File gambar"}</span>
+                </div>
               </div>
-              <span className={`status-pill status-${status}`}>
-                <span className="status-indicator" />
-                {status === "loading" ? "Sedang diproses" : status === "done" ? "Selesai" : "Perlu perhatian"}
+              <span className={`status-label status-${status}`}>
+                <i />
+                {status === "loading" ? "Memproses" : status === "done" ? "Selesai" : "Gagal"}
               </span>
             </div>
+
             <div className="preview-grid">
-              <figure className="preview-panel">
-                <figcaption><span>01</span> GAMBAR ASLI</figcaption>
+              <figure className="preview-card">
+                <figcaption><span>Gambar asli</span></figcaption>
                 <div className="preview-canvas original-canvas">
                   {originalUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -230,14 +232,14 @@ export default function Home() {
                   )}
                 </div>
               </figure>
-              <figure className="preview-panel">
-                <figcaption><span>02</span> HASIL TRANSPARAN</figcaption>
+              <figure className="preview-card">
+                <figcaption><span>Background transparan</span></figcaption>
                 <div className="preview-canvas result-canvas" style={checkerboard}>
                   {status === "loading" && (
-                    <div className="processing-card">
+                    <div className="processing-state">
                       <span className="loading-spinner" />
                       <strong>Menghapus background...</strong>
-                      <small>AI sedang memisahkan objek dari latar</small>
+                      <small>Mohon tunggu sebentar</small>
                     </div>
                   )}
                   {status === "done" && resultUrl && (
@@ -245,72 +247,39 @@ export default function Home() {
                     <img src={resultUrl} alt="Gambar tanpa background" />
                   )}
                   {status === "error" && (
-                    <div className="error-card">
-                      <strong>Gambar belum berhasil diproses</strong>
+                    <div className="error-state">
+                      <strong>Gambar gagal diproses</strong>
                       <span>{error}</span>
                     </div>
                   )}
                 </div>
               </figure>
             </div>
+
             <div className="result-actions">
               {status === "done" && resultUrl && (
-                <a href={resultUrl} download={downloadName} className="download-button">
-                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <a href={resultUrl} download={downloadName} className="primary-button">
+                  <DownloadIcon />
                   Download PNG
                 </a>
               )}
               {status === "error" && file && (
-                <button onClick={() => process(file)} className="download-button">Coba lagi</button>
+                <button onClick={() => process(file)} className="primary-button">Coba lagi</button>
               )}
               <button onClick={reset} className="secondary-button">Pilih gambar lain</button>
             </div>
           </section>
         )}
-      </section>
 
-      <section id="cara-kerja" className="steps-section">
-        <div className="section-intro">
-          <span className="section-kicker">SIMPLE PROCESS</span>
-          <h2>Hasil bersih, tanpa langkah rumit.</h2>
-          <p>Tiga langkah sederhana untuk mendapatkan gambar tanpa background.</p>
-        </div>
-        <div className="steps-grid">
-          <article className="step-card">
-            <span className="step-number">01</span>
-            <div className="step-icon">↥</div>
-            <h3>Upload gambar</h3>
-            <p>Pilih foto dari perangkat atau cukup tarik ke area upload.</p>
-          </article>
-          <article className="step-card">
-            <span className="step-number">02</span>
-            <div className="step-icon">✳</div>
-            <h3>AI bekerja</h3>
-            <p>Teknologi AI mengenali objek utama dan menghapus latarnya.</p>
-          </article>
-          <article className="step-card">
-            <span className="step-number">03</span>
-            <div className="step-icon">↓</div>
-            <h3>Download hasil</h3>
-            <p>Simpan PNG transparan dan gunakan sesuai kebutuhan.</p>
-          </article>
+        <div className="tool-footnote">
+          <span>Powered by AI background removal</span>
+          <span>PNG · Transparent</span>
         </div>
       </section>
 
-      <section id="tentang" className="closing-banner">
-        <div className="closing-mark"><SparkleMark /></div>
-        <div>
-          <span className="section-kicker">MAKE IT TRANSPARENT</span>
-          <h2>Ide bagus tidak butuh background yang ramai.</h2>
-          <p>Fokuskan perhatian pada hal yang paling penting.</p>
-        </div>
-        <a href="#workspace">Coba sekarang <span aria-hidden="true">↗</span></a>
-      </section>
-
-      <footer className="site-footer">
-        <a href="/" className="brand footer-brand"><SparkleMark /><span>remove<span className="brand-dot">.</span>bg</span></a>
-        <p>Made for a clearer focus. © 2026 remove.bg</p>
-        <a href="#workspace">Kembali ke atas ↑</a>
+      <footer className="app-footer">
+        <span>remove-bg</span>
+        <span>Simple image processing tool</span>
       </footer>
     </main>
   );
