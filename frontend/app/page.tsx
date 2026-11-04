@@ -309,7 +309,7 @@ export default function Home() {
 
       <footer className="site-footer">
         <a href="/" className="brand footer-brand"><SparkleMark /><span>remove<span className="brand-dot">.</span>bg</span></a>
-        <p>Made for a clearer focus. © {new Date().getFullYear()} remove.bg</p>
+        <p>Made for a clearer focus. © 2026 remove.bg</p>
         <a href="#workspace">Kembali ke atas ↑</a>
       </footer>
     </main>
