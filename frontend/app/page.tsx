@@ -15,6 +15,26 @@ const checkerboard = {
 
 type Status = "idle" | "loading" | "done" | "error";
 
+function SparkleMark() {
+  return (
+    <span className="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M16 2.5 19.4 12.6 29.5 16l-10.1 3.4L16 29.5l-3.4-10.1L2.5 16l10.1-3.4L16 2.5Z" fill="currentColor" />
+        <path d="m25.5 2 .9 3.6L30 6.5l-3.6.9-.9 3.6-.9-3.6-3.6-.9 3.6-.9.9-3.6Z" fill="currentColor" />
+      </svg>
+    </span>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <path d="M24 31V8m0 0-8 8m8-8 8 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 28v9a4 4 0 0 0 4 4h22a4 4 0 0 0 4-4v-9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
@@ -24,7 +44,6 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Bersihkan object URL supaya tidak bocor memori
   useEffect(() => {
     return () => {
       if (originalUrl) URL.revokeObjectURL(originalUrl);
@@ -81,7 +100,6 @@ export default function Home() {
     if (dropped) process(dropped);
   };
 
-  // Tempel gambar dari clipboard (Ctrl+V)
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const item = Array.from(e.clipboardData?.items ?? []).find((i) =>
@@ -108,132 +126,192 @@ export default function Home() {
     : "no-bg.png";
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-5 py-12 text-stone-900">
-      <header className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          Hapus background gambar
-        </h1>
-        <p className="mt-3 max-w-xl text-stone-600">
-          Unggah foto, dapatkan PNG dengan background transparan. File diproses
-          di server dan tidak disimpan.
-        </p>
+    <main className="min-h-screen overflow-hidden">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
+
+      <header className="site-header">
+        <a href="/" className="brand" aria-label="Remove.bg home">
+          <SparkleMark />
+          <span>remove<span className="brand-dot">.</span>bg</span>
+        </a>
+        <nav className="header-nav" aria-label="Navigasi utama">
+          <a href="#cara-kerja">Cara kerja</a>
+          <a href="#tentang">Tentang</a>
+        </nav>
+        <a href="#workspace" className="header-cta">
+          Mulai gratis <span aria-hidden="true">↗</span>
+        </a>
       </header>
 
-      {status === "idle" && (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-          }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-20 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
-            dragging
-              ? "border-teal-700 bg-teal-50"
-              : "border-stone-300 bg-white hover:border-stone-400"
-          }`}
-        >
-          <p className="text-lg font-medium">Tarik gambar ke sini</p>
-          <p className="mt-1 text-sm text-stone-500">
-            atau klik untuk memilih file, atau tempel dengan Ctrl+V. JPG, PNG,
-            WebP, maksimal 10 MB.
-          </p>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const picked = e.target.files?.[0];
-              if (picked) process(picked);
-            }}
-          />
+      <section className="hero-section">
+        <div className="eyebrow"><span className="eyebrow-dot" /> AI IMAGE TOOLKIT</div>
+        <h1>
+          Background hilang.
+          <br />
+          <span>Fokus tetap pada objek.</span>
+        </h1>
+        <p className="hero-copy">
+          Hapus background foto dalam hitungan detik. Hasilkan gambar PNG
+          transparan yang siap digunakan di mana saja.
+        </p>
+        <div className="hero-points">
+          <span><i>✓</i> Gratis digunakan</span>
+          <span><i>✓</i> Tanpa perlu daftar</span>
+          <span><i>✓</i> Hasil PNG transparan</span>
         </div>
-      )}
+      </section>
 
-      {status !== "idle" && (
-        <section>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <figure>
-              <figcaption className="mb-2 text-sm font-medium text-stone-600">
-                Asli
-              </figcaption>
-              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-stone-200">
-                {originalUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={originalUrl}
-                    alt="Gambar asli"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                )}
-              </div>
-            </figure>
-
-            <figure>
-              <figcaption className="mb-2 text-sm font-medium text-stone-600">
-                Hasil
-              </figcaption>
-              <div
-                style={checkerboard}
-                className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl"
-              >
-                {status === "loading" && (
-                  <div className="flex flex-col items-center gap-3 rounded-xl bg-white/90 px-5 py-4 text-sm">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-stone-300 border-t-teal-700" />
-                    Memproses, biasanya 2-5 detik
-                  </div>
-                )}
-                {status === "done" && resultUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={resultUrl}
-                    alt="Gambar tanpa background"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                )}
-                {status === "error" && (
-                  <p className="max-w-xs rounded-xl bg-white/95 px-4 py-3 text-center text-sm text-red-700">
-                    {error}
-                  </p>
-                )}
-              </div>
-            </figure>
+      <section id="workspace" className="workspace-section">
+        <div className="workspace-heading">
+          <div>
+            <span className="section-kicker">WORKSPACE</span>
+            <h2>Mulai dengan gambar kamu</h2>
           </div>
+          <span className="privacy-note"><span>♧</span> File tidak disimpan</span>
+        </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            {status === "done" && resultUrl && (
-              <a
-                href={resultUrl}
-                download={downloadName}
-                className="rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
-              >
-                Unduh PNG
-              </a>
-            )}
-            {status === "error" && file && (
-              <button
-                onClick={() => process(file)}
-                className="rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-800"
-              >
-                Coba lagi
-              </button>
-            )}
-            <button
-              onClick={reset}
-              className="rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-stone-50"
-            >
-              Gambar lain
-            </button>
+        {status === "idle" && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+            }}
+            className={`upload-card ${dragging ? "is-dragging" : ""}`}
+          >
+            <div className="upload-icon-wrap"><UploadIcon /></div>
+            <h3>Tarik & letakkan gambar di sini</h3>
+            <p>atau pilih file dari perangkat kamu</p>
+            <span className="choose-file-button">Pilih gambar <span aria-hidden="true">→</span></span>
+            <div className="upload-meta">
+              <span>JPG</span><span>PNG</span><span>WEBP</span><span>Maks. 10 MB</span>
+            </div>
+            <div className="paste-hint">Tips: kamu juga bisa paste gambar dengan <kbd>Ctrl</kbd> + <kbd>V</kbd></div>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const picked = e.target.files?.[0];
+                if (picked) process(picked);
+              }}
+            />
           </div>
-        </section>
-      )}
+        )}
+
+        {status !== "idle" && (
+          <section className="result-workspace" aria-live="polite">
+            <div className="result-topbar">
+              <div>
+                <span className="section-kicker">IMAGE PREVIEW</span>
+                <p className="filename">{file?.name}</p>
+              </div>
+              <span className={`status-pill status-${status}`}>
+                <span className="status-indicator" />
+                {status === "loading" ? "Sedang diproses" : status === "done" ? "Selesai" : "Perlu perhatian"}
+              </span>
+            </div>
+            <div className="preview-grid">
+              <figure className="preview-panel">
+                <figcaption><span>01</span> GAMBAR ASLI</figcaption>
+                <div className="preview-canvas original-canvas">
+                  {originalUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={originalUrl} alt="Gambar asli" />
+                  )}
+                </div>
+              </figure>
+              <figure className="preview-panel">
+                <figcaption><span>02</span> HASIL TRANSPARAN</figcaption>
+                <div className="preview-canvas result-canvas" style={checkerboard}>
+                  {status === "loading" && (
+                    <div className="processing-card">
+                      <span className="loading-spinner" />
+                      <strong>Menghapus background...</strong>
+                      <small>AI sedang memisahkan objek dari latar</small>
+                    </div>
+                  )}
+                  {status === "done" && resultUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={resultUrl} alt="Gambar tanpa background" />
+                  )}
+                  {status === "error" && (
+                    <div className="error-card">
+                      <strong>Gambar belum berhasil diproses</strong>
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+              </figure>
+            </div>
+            <div className="result-actions">
+              {status === "done" && resultUrl && (
+                <a href={resultUrl} download={downloadName} className="download-button">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Download PNG
+                </a>
+              )}
+              {status === "error" && file && (
+                <button onClick={() => process(file)} className="download-button">Coba lagi</button>
+              )}
+              <button onClick={reset} className="secondary-button">Pilih gambar lain</button>
+            </div>
+          </section>
+        )}
+      </section>
+
+      <section id="cara-kerja" className="steps-section">
+        <div className="section-intro">
+          <span className="section-kicker">SIMPLE PROCESS</span>
+          <h2>Hasil bersih, tanpa langkah rumit.</h2>
+          <p>Tiga langkah sederhana untuk mendapatkan gambar tanpa background.</p>
+        </div>
+        <div className="steps-grid">
+          <article className="step-card">
+            <span className="step-number">01</span>
+            <div className="step-icon">↥</div>
+            <h3>Upload gambar</h3>
+            <p>Pilih foto dari perangkat atau cukup tarik ke area upload.</p>
+          </article>
+          <article className="step-card">
+            <span className="step-number">02</span>
+            <div className="step-icon">✳</div>
+            <h3>AI bekerja</h3>
+            <p>Teknologi AI mengenali objek utama dan menghapus latarnya.</p>
+          </article>
+          <article className="step-card">
+            <span className="step-number">03</span>
+            <div className="step-icon">↓</div>
+            <h3>Download hasil</h3>
+            <p>Simpan PNG transparan dan gunakan sesuai kebutuhan.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="tentang" className="closing-banner">
+        <div className="closing-mark"><SparkleMark /></div>
+        <div>
+          <span className="section-kicker">MAKE IT TRANSPARENT</span>
+          <h2>Ide bagus tidak butuh background yang ramai.</h2>
+          <p>Fokuskan perhatian pada hal yang paling penting.</p>
+        </div>
+        <a href="#workspace">Coba sekarang <span aria-hidden="true">↗</span></a>
+      </section>
+
+      <footer className="site-footer">
+        <a href="/" className="brand footer-brand"><SparkleMark /><span>remove<span className="brand-dot">.</span>bg</span></a>
+        <p>Made for a clearer focus. © {new Date().getFullYear()} remove.bg</p>
+        <a href="#workspace">Kembali ke atas ↑</a>
+      </footer>
     </main>
   );
 }
