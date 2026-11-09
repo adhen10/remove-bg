@@ -37,18 +37,31 @@ export default function CompressPdf() {
     }, [resultUrl]);
 
     const pick = (picked: File) => {
-        if (picked.type !== "application/pdf" && !picked.name.toLowerCase().endsWith(".pdf")) {
+        const isPdf =
+            picked.type === "application/pdf" ||
+            picked.name.toLowerCase().endsWith(".pdf");
+
+        if (!isPdf) {
+            setFile(null);
+            setResultUrl(null);
+            setResultSize(0);
             setError("File harus berformat PDF.");
             setStatus("error");
+            if (inputRef.current) inputRef.current.value = "";
             return;
         }
         if (picked.size > MAX_BYTES) {
+            setFile(null);
+            setResultUrl(null);
+            setResultSize(0);
             setError(`Ukuran file maksimal ${formatBytes(MAX_BYTES)}.`);
             setStatus("error");
+            if (inputRef.current) inputRef.current.value = "";
             return;
         }
         setFile(picked);
         setResultUrl(null);
+        setResultSize(0);
         setError(null);
         setStatus("ready");
     };
@@ -202,7 +215,14 @@ export default function CompressPdf() {
                                             name="level"
                                             value={l.value}
                                             checked={level === l.value}
-                                            onChange={() => setLevel(l.value)}
+                                            onChange={() => {
+                                                if (level !== l.value) {
+                                                    setLevel(l.value);
+                                                    setResultUrl(null);
+                                                    setResultSize(0);
+                                                    if (status === "done") setStatus("ready");
+                                                }
+                                            }}
                                             className="sr-only"
                                         />
                                         <span className="block text-sm font-medium">{l.label}</span>
@@ -246,7 +266,11 @@ export default function CompressPdf() {
                                         Unduh PDF
                                     </a>
                                     <button
-                                        onClick={() => setStatus("ready")}
+                                        onClick={() => {
+                                            setResultUrl(null);
+                                            setResultSize(0);
+                                            setStatus("ready");
+                                        }}
                                         className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-stone-50"
                                     >
                                         Coba tingkat lain
