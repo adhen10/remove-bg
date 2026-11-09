@@ -78,6 +78,8 @@ export default function Home() {
       setFile(null);
       setOriginalUrl(null);
       setResultUrl(null);
+      setInputDimensions(null);
+      setOutputDimensions(null);
       setOutputBytes(0);
       setError("Format yang didukung hanya JPG, PNG, dan WEBP.");
       setStatus("error");
@@ -88,6 +90,8 @@ export default function Home() {
       setFile(null);
       setOriginalUrl(null);
       setResultUrl(null);
+      setInputDimensions(null);
+      setOutputDimensions(null);
       setOutputBytes(0);
       setError("Ukuran file maksimal 10 MB.");
       setStatus("error");
