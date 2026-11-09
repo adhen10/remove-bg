@@ -12,7 +12,7 @@ export default function SiteHeader() {
     const pathname = usePathname();
 
     return (
-        <header className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-b border-black/10 px-6 py-6">
+        <header className="site-header-bar mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 border-b border-black/10 px-6 py-6">
             <Link href="/" className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#46745a] text-white">
                     <svg
@@ -35,7 +35,7 @@ export default function SiteHeader() {
 
             <nav
                 aria-label="Menu utama"
-                className="flex gap-1 rounded-full border border-black/10 bg-white p-1"
+                className="site-tab-list flex gap-1 rounded-full border border-black/10 bg-white p-1"
             >
                 {TABS.map((tab) => {
                     const active = pathname === tab.href;
@@ -44,7 +44,7 @@ export default function SiteHeader() {
                             key={tab.href}
                             href={tab.href}
                             aria-current={active ? "page" : undefined}
-                            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] ${active
+                            className={`site-tab rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] ${active
                                     ? "bg-[#46745a] text-white"
                                     : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
                                 }`}
