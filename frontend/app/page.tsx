@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -136,14 +138,7 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <a href="/" className="app-brand" aria-label="Remove BG">
-          <AppMark />
-          <span>remove-bg</span>
-        </a>
-        <span className="header-label">IMAGE TOOL</span>
-      </header>
-
+      <SiteHeader />
       <section className="tool-area">
         <div className="tool-heading">
           <div>
