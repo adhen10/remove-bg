@@ -437,3 +437,113 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .result-area, .processing-state { animation: none !important; }
 }
+
+
+/* PDF tool interactions */
+.pdf-level-card {
+  display: block;
+  padding: 13px 14px;
+  border: 1px solid #e2e8e1;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.pdf-level-card:hover {
+  border-color: #b9cdbb;
+  transform: translateY(-1px);
+}
+.pdf-level-card.is-selected {
+  border-color: #6c9877;
+  background: #f2f7f1;
+  box-shadow: 0 0 0 2px rgba(79, 135, 91, .08);
+}
+.pdf-level-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pdf-level-indicator {
+  width: 17px;
+  height: 17px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #d7dfd7;
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.pdf-level-card.is-selected .pdf-level-indicator {
+  border-color: #46745a;
+  background: #46745a;
+  transform: scale(1.04);
+}
+.pdf-compress-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.pdf-compress-button:not(:disabled):hover { box-shadow: 0 4px 12px rgba(45, 97, 66, .15); }
+.pdf-compress-button:not(:disabled):active { transform: translateY(1px); }
+.pdf-button-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.pdf-processing {
+  padding: 12px 13px;
+  border: 1px solid #e5ebe4;
+  border-radius: 10px;
+  background: #fff;
+  color: #768178;
+  font-size: 10px;
+  animation: panel-in .2s ease both;
+}
+.pdf-processing > div { margin-top: 8px; }
+.pdf-progress-track, .pdf-saved-track {
+  display: block;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6ece5;
+}
+.pdf-progress-track > span {
+  display: block;
+  width: 34%;
+  height: 100%;
+  border-radius: inherit;
+  background: #4f8860;
+  animation: pdf-progress 1.25s ease-in-out infinite;
+}
+.pdf-result-panel { animation: panel-in .24s ease both; }
+.pdf-done-mark {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dcecdf;
+  color: #347653;
+  font-size: 13px;
+  font-weight: 700;
+}
+.pdf-saved-track { height: 6px; background: #dce8dc; }
+.pdf-saved-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #4d8b60;
+  transition: width .35s ease;
+}
+.pdf-download-button { transition: transform .16s ease, background .16s ease, box-shadow .16s ease; }
+.pdf-download-button:hover { box-shadow: 0 4px 12px rgba(45, 97, 66, .15); }
+.pdf-download-button:active { transform: translateY(1px); }
+@keyframes pdf-progress {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(320%); }
+}
