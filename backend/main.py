@@ -50,6 +50,7 @@ _image_slots = threading.BoundedSemaphore(IMAGE_WORKERS)
 # Let Pillow reject decompression bombs at the same pixel limit used by
 # this service. The warning is promoted to an exception per decode below.
 Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+warnings.simplefilter("error", Image.DecompressionBombWarning)
 
 # Compress PDF limits
 MAX_PDF_BYTES = positive_int_env("MAX_PDF_MB", 50) * 1024 * 1024
@@ -85,29 +86,26 @@ def image_too_large() -> HTTPException:
 def _remove_background(data: bytes) -> bytes:
     """Decode, validate, process, and encode an uploaded image."""
     try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", Image.DecompressionBombWarning)
+        with Image.open(
+            io.BytesIO(data),
+            formats=ALLOWED_IMAGE_FORMATS,
+        ) as source:
+            if source.format not in ALLOWED_IMAGE_FORMATS:
+                raise HTTPException(
+                    400, "Format gambar yang didukung: JPG, PNG, dan WEBP."
+                )
 
-            with Image.open(
-                io.BytesIO(data),
-                formats=ALLOWED_IMAGE_FORMATS,
-            ) as source:
-                if source.format not in ALLOWED_IMAGE_FORMATS:
-                    raise HTTPException(
-                        400, "Format gambar yang didukung: JPG, PNG, dan WEBP."
-                    )
+            if source.width * source.height > MAX_IMAGE_PIXELS:
+                raise image_too_large()
 
-                if source.width * source.height > MAX_IMAGE_PIXELS:
-                    raise image_too_large()
+            if getattr(source, "n_frames", 1) > 1:
+                raise HTTPException(
+                    400,
+                    "Gambar animasi belum didukung. Gunakan JPG, PNG, atau WEBP statis.",
+                )
 
-                if getattr(source, "n_frames", 1) > 1:
-                    raise HTTPException(
-                        400,
-                        "Gambar animasi belum didukung. Gunakan JPG, PNG, atau WEBP statis.",
-                    )
-
-                source.load()
-                image = ImageOps.exif_transpose(source).convert("RGBA")
+            source.load()
+            image = ImageOps.exif_transpose(source).convert("RGBA")
 
     except HTTPException:
         raise
