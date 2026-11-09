@@ -114,7 +114,7 @@ export default function Home() {
       setResultUrl(URL.createObjectURL(blob));
       setStatus("done");
     } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (controller.signal.aborted) return;
       setError(
         e instanceof TypeError
           ? "Tidak bisa terhubung ke server. Pastikan backend sudah berjalan."
