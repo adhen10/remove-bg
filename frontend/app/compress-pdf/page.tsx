@@ -99,6 +99,7 @@ export default function CompressPdf() {
     const reset = () => {
         setFile(null);
         setResultUrl(null);
+        setResultSize(0);
         setError(null);
         setStatus("idle");
         if (inputRef.current) inputRef.current.value = "";
