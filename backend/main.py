@@ -165,8 +165,10 @@ async def remove_bg(file: UploadFile = File(...)):
             ) from exc
         return Response(content=output, media_type="image/png")
     finally:
-        await file.close()
-        _image_slots.release()
+        try:
+            await file.close()
+        finally:
+            _image_slots.release()
 
 
 # A sync route is dispatched through Starlette's worker thread pool.
@@ -237,5 +239,7 @@ def compress_pdf(file: UploadFile = File(...), level: str = Form("medium")):
 
         return Response(content=output, media_type="application/pdf")
     finally:
-        file.file.close()
-        _pdf_slots.release()
+        try:
+            file.file.close()
+        finally:
+            _pdf_slots.release()
