@@ -43,6 +43,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [outputBytes, setOutputBytes] = useState(0);
   const [comparePosition, setComparePosition] = useState(50);
+  const [previewMode, setPreviewMode] = useState<"compare" | "result">("compare");
+  const [previewSurface, setPreviewSurface] = useState<"checker" | "light" | "dark">("checker");
+  const [inputDimensions, setInputDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [outputDimensions, setOutputDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -53,6 +58,28 @@ export default function Home() {
       if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
   }, [originalUrl, resultUrl]);
+
+  useEffect(() => {
+    if (!originalUrl) {
+      setInputDimensions(null);
+      return;
+    }
+    const image = new window.Image();
+    image.onload = () => setInputDimensions({ width: image.naturalWidth, height: image.naturalHeight });
+    image.src = originalUrl;
+    return () => { image.onload = null; };
+  }, [originalUrl]);
+
+  useEffect(() => {
+    if (!resultUrl) {
+      setOutputDimensions(null);
+      return;
+    }
+    const image = new window.Image();
+    image.onload = () => setOutputDimensions({ width: image.naturalWidth, height: image.naturalHeight });
+    image.src = resultUrl;
+    return () => { image.onload = null; };
+  }, [resultUrl]);
 
   useEffect(() => {
     return () => {
@@ -97,6 +124,9 @@ export default function Home() {
     setResultUrl(null);
     setOutputBytes(0);
     setComparePosition(50);
+    setPreviewMode("compare");
+    setPreviewSurface("checker");
+    setCopyMessage("");
     setError(null);
     setStatus("loading");
 
@@ -162,10 +192,36 @@ export default function Home() {
     setResultUrl(null);
     setOutputBytes(0);
     setComparePosition(50);
+    setPreviewMode("compare");
+    setPreviewSurface("checker");
+    setCopyMessage("");
     setError(null);
     setStatus("idle");
     if (inputRef.current) inputRef.current.value = "";
   };
+
+  const copyPng = async () => {
+    if (!resultUrl) return;
+
+    try {
+      if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+        throw new Error("Browser ini belum mendukung salin gambar. Gunakan Download PNG.");
+      }
+      const response = await fetch(resultUrl);
+      const blob = await response.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob }),
+      ]);
+      setCopyMessage("PNG berhasil disalin ke clipboard.");
+    } catch {
+      setCopyMessage("Tidak bisa menyalin gambar. Coba gunakan Download PNG.");
+    }
+  };
+
+  const activePreviewStyle =
+    previewSurface === "checker"
+      ? checkerboard
+      : { backgroundColor: previewSurface === "light" ? "#f1f2ef" : "#252d28" };
 
   const downloadName = file
     ? `${file.name.replace(/\.[^.]+$/, "")}-no-bg.png`
@@ -253,7 +309,131 @@ export default function Home() {
             </div>
 
             {status === "done" && resultUrl && originalUrl ? (
-              <figure className="compare-card">
+              <div className="finished-preview">
+                <div className="preview-toolbar">
+                  <div className="preview-mode-control" role="group" aria-label="Mode preview">
+                    <button
+                      type="button"
+                      className={`preview-mode-button ${previewMode === "compare" ? "is-active" : ""}`}
+                      aria-pressed={previewMode === "compare"}
+                      onClick={() => setPreviewMode("compare")}
+                    >
+                      Bandingkan
+                    </button>
+                    <button
+                      type="button"
+                      className={`preview-mode-button ${previewMode === "result" ? "is-active" : ""}`}
+                      aria-pressed={previewMode === "result"}
+                      onClick={() => setPreviewMode("result")}
+                    >
+                      Hasil saja
+                    </button>
+                  </div>
+                  <div className="surface-control" role="group" aria-label="Warna latar preview">
+                    <span>Latar</span>
+                    <button
+                      type="button"
+                      title="Pola transparansi"
+                      aria-label="Pola transparansi"
+                      aria-pressed={previewSurface === "checker"}
+                      className={`surface-swatch swatch-checker ${previewSurface === "checker" ? "is-active" : ""}`}
+                      onClick={() => setPreviewSurface("checker")}
+                    />
+                    <button
+                      type="button"
+                      title="Latar terang"
+                      aria-label="Latar terang"
+                      aria-pressed={previewSurface === "light"}
+                      className={`surface-swatch swatch-light ${previewSurface === "light" ? "is-active" : ""}`}
+                      onClick={() => setPreviewSurface("light")}
+                    />
+                    <button
+                      type="button"
+                      title="Latar gelap"
+                      aria-label="Latar gelap"
+                      aria-pressed={previewSurface === "dark"}
+                      className={`surface-swatch swatch-dark ${previewSurface === "dark" ? "is-active" : ""}`}
+                      onClick={() => setPreviewSurface("dark")}
+                    />
+                  </div>
+                </div>
+
+                {previewMode === "compare" ? (
+                  <figure className="compare-card">
+                    <figcaption className="compare-caption">
+                      <span>Perbandingan hasil</span>
+                      <span>Geser untuk membandingkan</span>
+                    </figcaption>
+                    <div className="comparison-stage" style={activePreviewStyle}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={originalUrl}
+                        alt="Gambar asli"
+                        className="comparison-image"
+                        style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
+                      />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={resultUrl}
+                        alt="Gambar setelah background dihapus"
+                        className="comparison-image"
+                        style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}
+                      />
+                      <span className="comparison-tag comparison-tag-before">Asli</span>
+                      <span className="comparison-tag comparison-tag-after">Transparan</span>
+                      <span
+                        className="comparison-divider"
+                        style={{ left: `${comparePosition}%` }}
+                        aria-hidden="true"
+                      >
+                        <span className="comparison-knob">
+                          <svg viewBox="0 0 20 20" fill="none">
+                            <path d="m7 5-4 5 4 5M13 5l4 5-4 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={comparePosition}
+                        onChange={(event) => setComparePosition(Number(event.target.value))}
+                        className="comparison-range"
+                        aria-label="Geser untuk membandingkan gambar asli dan hasil transparan"
+                        aria-valuetext={`${comparePosition}% gambar asli terlihat`}
+                      />
+                    </div>
+                    <div className="compare-range-hint">
+                      <span>← Gambar asli</span>
+                      <span>Hasil transparan →</span>
+                    </div>
+                  </figure>
+                ) : (
+                  <figure className="single-result-card">
+                    <figcaption className="compare-caption">
+                      <span>Hasil PNG transparan</span>
+                      <span>{outputDimensions ? `${outputDimensions.width} × ${outputDimensions.height} px` : "PNG"}</span>
+                    </figcaption>
+                    <div className="single-result-stage" style={activePreviewStyle}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={resultUrl} alt="Hasil PNG tanpa background" />
+                    </div>
+                  </figure>
+                )}
+
+                <div className="image-properties">
+                  <span>
+                    Dimensi asli: <strong>{inputDimensions ? `${inputDimensions.width} × ${inputDimensions.height} px` : "—"}</strong>
+                  </span>
+                  <span>
+                    Dimensi output: <strong>{outputDimensions ? `${outputDimensions.width} × ${outputDimensions.height} px` : "—"}</strong>
+                  </span>
+                  <span>
+                    Ukuran PNG: <strong>{(outputBytes / 1024 / 1024).toFixed(2)} MB</strong>
+                  </span>
+                </div>
+              </div>
+            ) : (
                 <figcaption className="compare-caption">
                   <span>Perbandingan hasil</span>
                   <span>Geser untuk membandingkan</span>
@@ -301,7 +481,7 @@ export default function Home() {
                   <span>← Gambar asli</span>
                   <span>Hasil transparan →</span>
                 </div>
-              </figure>
+              </div>
             ) : (
               <div className="preview-grid">
                 <figure className="preview-card">
@@ -334,12 +514,22 @@ export default function Home() {
               </div>
             )}
 
+            {copyMessage && status === "done" && (
+              <p className={`copy-feedback ${copyMessage.startsWith("PNG berhasil") ? "is-success" : "is-error"}`} role="status">
+                {copyMessage}
+              </p>
+            )}
             <div className="result-actions">
               {status === "done" && resultUrl && (
-                <a href={resultUrl} download={downloadName} className="primary-button">
-                  <DownloadIcon />
-                  Download PNG
-                </a>
+                <>
+                  <a href={resultUrl} download={downloadName} className="primary-button">
+                    <DownloadIcon />
+                    Download PNG
+                  </a>
+                  <button type="button" onClick={copyPng} className="secondary-button copy-button">
+                    {copyMessage.startsWith("PNG berhasil") ? "✓ Tersalin" : "Salin PNG"}
+                  </button>
+                </>
               )}
               {status === "error" && file && (
                 <button onClick={() => process(file)} className="primary-button">Coba lagi</button>
