@@ -4,7 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import SiteHeader from "../../components/SiteHeader";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
-const MAX_BYTES = 50 * 1024 * 1024;
+const DEFAULT_MAX_PDF_MB = 200;
+const configuredMaxPdfMb = Number(process.env.NEXT_PUBLIC_MAX_PDF_MB ?? DEFAULT_MAX_PDF_MB);
+const MAX_PDF_MB =
+    Number.isSafeInteger(configuredMaxPdfMb) && configuredMaxPdfMb > 0
+        ? configuredMaxPdfMb
+        : DEFAULT_MAX_PDF_MB;
+const MAX_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 const LEVELS = [
     { value: "low", label: "Ringan", hint: "Kualitas gambar hampir sama" },
