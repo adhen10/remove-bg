@@ -9,10 +9,12 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from dotenv import load_dotenv
 from PIL import Image, ImageOps
 from rembg import new_session, remove
 
 logger = logging.getLogger(__name__)
+load_dotenv()
 
 
 def positive_int_env(name: str, default: int) -> int:
