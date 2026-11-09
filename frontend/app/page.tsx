@@ -253,7 +253,9 @@ export default function Home() {
             }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            onClick={() => inputRef.current?.click()}
+            onClick={(event) => {
+              if (event.target !== inputRef.current) inputRef.current?.click();
+            }}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -262,8 +264,8 @@ export default function Home() {
             className={`upload-area ${dragging ? "is-dragging" : ""}`}
           >
             <div className="upload-icon"><UploadIcon /></div>
-            <h2>Tarik gambar ke sini</h2>
-            <p>atau pilih gambar dari perangkat kamu</p>
+            <h2>{dragging ? "Lepaskan gambar untuk mulai" : "Tarik gambar ke sini"}</h2>
+            <p>{dragging ? "Gambar akan langsung diproses setelah dilepaskan." : "atau pilih gambar dari perangkat kamu"}</p>
             <span className="select-file-button">Pilih gambar</span>
             <div className="file-guidance">
               <span>JPG</span>
