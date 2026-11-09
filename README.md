@@ -75,6 +75,13 @@ Open `http://localhost:3000`.
 
 Do not put secrets in `NEXT_PUBLIC_*` variables; Next.js exposes them to the browser. The frontend PDF limit must match the backend `MAX_PDF_MB` value. Because it is a public Next.js variable, rebuild/redeploy the frontend after changing it.
 
+When updating an existing local setup, edit the existing files manually (pulling does not overwrite ignored environment files):
+
+- `backend/.env`: set `MAX_PDF_MB=200` and `PDF_WORKERS=1`.
+- `frontend/.env.local`: set `NEXT_PUBLIC_MAX_PDF_MB=200`.
+
+Restart the backend and restart/rebuild the Next.js frontend after changing these values.
+
 ## API endpoints
 
 | Method | Endpoint | Purpose |
