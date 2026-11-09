@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
 
 const checkerboard = {
   backgroundColor: "#ffffff",
@@ -16,18 +17,6 @@ const checkerboard = {
 } as const;
 
 type Status = "idle" | "loading" | "done" | "error";
-
-function AppMark() {
-  return (
-    <span className="app-mark" aria-hidden="true">
-      <svg viewBox="0 0 28 28" fill="none">
-        <rect x="1" y="1" width="26" height="26" rx="7" fill="currentColor" />
-        <path d="M8 9.25h12M8 14h8M8 18.75h5" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="m18.5 16.5 1.2 2.3 2.3 1.2-2.3 1.2-1.2 2.3-1.2-2.3-2.3-1.2 2.3-1.2 1.2-2.3Z" fill="#D8F1DF" />
-      </svg>
-    </span>
-  );
-}
 
 function UploadIcon() {
   return (
@@ -54,26 +43,46 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
+      requestControllerRef.current?.abort();
       if (originalUrl) URL.revokeObjectURL(originalUrl);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
   }, [originalUrl, resultUrl]);
 
   const process = useCallback(async (picked: File) => {
-    if (!picked.type.startsWith("image/")) {
-      setError("File harus berupa gambar (JPG, PNG, atau WebP).");
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
+
+    const extension = picked.name.split(".").pop()?.toLowerCase() ?? "";
+    const supportedType =
+      ALLOWED_MIME_TYPES.has(picked.type) ||
+      (!picked.type && ALLOWED_EXTENSIONS.has(extension));
+
+    if (!supportedType) {
+      setFile(null);
+      setOriginalUrl(null);
+      setResultUrl(null);
+      setError("Format yang didukung hanya JPG, PNG, dan WEBP.");
       setStatus("error");
+      if (inputRef.current) inputRef.current.value = "";
       return;
     }
     if (picked.size > MAX_BYTES) {
+      setFile(null);
+      setOriginalUrl(null);
+      setResultUrl(null);
       setError("Ukuran file maksimal 10 MB.");
       setStatus("error");
+      if (inputRef.current) inputRef.current.value = "";
       return;
     }
 
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     setFile(picked);
     setOriginalUrl(URL.createObjectURL(picked));
     setResultUrl(null);
@@ -86,21 +95,31 @@ export default function Home() {
       const res = await fetch(`${API_URL}/remove-bg`, {
         method: "POST",
         body: form,
+        signal: controller.signal,
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         throw new Error(body?.detail ?? "Gagal memproses gambar.");
       }
+
       const blob = await res.blob();
+      if (blob.type !== "image/png" || blob.size === 0) {
+        throw new Error("Server tidak mengembalikan file PNG yang valid.");
+      }
       setResultUrl(URL.createObjectURL(blob));
       setStatus("done");
     } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
       setError(
         e instanceof TypeError
           ? "Tidak bisa terhubung ke server. Pastikan backend sudah berjalan."
           : (e as Error).message
       );
       setStatus("error");
+    } finally {
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+      }
     }
   }, []);
 
@@ -124,6 +143,8 @@ export default function Home() {
   }, [process]);
 
   const reset = () => {
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
     setFile(null);
     setOriginalUrl(null);
     setResultUrl(null);
@@ -154,7 +175,7 @@ export default function Home() {
           </span>
         </div>
 
-        {status === "idle" && (
+        {(status === "idle" || (status === "error" && !file)) && (
           <div
             onDragOver={(e) => {
               e.preventDefault();
@@ -195,7 +216,7 @@ export default function Home() {
           </div>
         )}
 
-        {status !== "idle" && (
+        {status !== "idle" && !(status === "error" && !file) && (
           <section className="result-area" aria-live="polite">
             <div className="result-heading">
               <div className="file-detail">
@@ -264,6 +285,12 @@ export default function Home() {
               <button onClick={reset} className="secondary-button">Pilih gambar lain</button>
             </div>
           </section>
+        )}
+
+        {status === "error" && !file && (
+          <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+            {error}
+          </p>
         )}
 
         <div className="tool-footnote">
