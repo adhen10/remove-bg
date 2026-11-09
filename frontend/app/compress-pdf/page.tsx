@@ -83,6 +83,13 @@ export default function CompressPdf() {
                 throw new Error(body?.detail ?? "Gagal mengompres PDF.");
             }
             const blob = await res.blob();
+            if (blob.size === 0 || (blob.type && blob.type !== "application/pdf")) {
+                throw new Error("Server tidak mengembalikan PDF yang valid.");
+            }
+            const signature = await blob.slice(0, 5).text();
+            if (signature !== "%PDF-") {
+                throw new Error("Hasil tidak memiliki format PDF yang valid.");
+            }
             setResultSize(blob.size);
             setResultUrl(URL.createObjectURL(blob));
             setStatus("done");
@@ -106,6 +113,7 @@ export default function CompressPdf() {
     };
 
     const saved = file ? Math.max(0, Math.round((1 - resultSize / file.size) * 100)) : 0;
+    const savedBytes = file ? Math.max(0, file.size - resultSize) : 0;
     const downloadName = file
         ? `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`
         : "compressed.pdf";
@@ -155,8 +163,12 @@ export default function CompressPdf() {
                                 <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
                             </svg>
                         </span>
-                        <p className="mt-6 text-lg font-semibold">Tarik file PDF ke sini</p>
-                        <p className="mt-1 text-sm text-stone-500">atau pilih file dari perangkat kamu</p>
+                        <p className="mt-6 text-lg font-semibold">
+                            {dragging ? "Lepaskan PDF untuk memilih file" : "Tarik file PDF ke sini"}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-500">
+                            {dragging ? "File akan diperiksa sebelum diproses." : "atau pilih file dari perangkat kamu"}
+                        </p>
                         <button
                             onClick={() => inputRef.current?.click()}
                             className="mt-6 rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2"
@@ -279,8 +291,8 @@ export default function CompressPdf() {
                                 </p>
                                 <p className="mt-1 text-sm text-stone-600">
                                     {saved > 0
-                                        ? `Ukuran berkurang ${saved}%.`
-                                        : "File ini sudah cukup optimal, ukurannya tidak berubah."}
+                                        ? `Berkurang ${formatBytes(savedBytes)} (${saved}%).`
+                                        : "Ukuran tidak berkurang pada level ini. Coba level lain jika ingin hasil berbeda."}
                                 </p>
                                 <div className="pdf-saved-track mt-4" aria-label={`Penghematan ukuran ${saved} persen`}>
                                     <span style={{ width: `${saved}%` }} />
