@@ -53,7 +53,7 @@ Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
 warnings.simplefilter("error", Image.DecompressionBombWarning)
 
 # Compress PDF limits
-MAX_PDF_BYTES = positive_int_env("MAX_PDF_MB", 50) * 1024 * 1024
+MAX_PDF_BYTES = positive_int_env("MAX_PDF_MB", 200) * 1024 * 1024
 MAX_PDF_PAGES = positive_int_env("MAX_PDF_PAGES", 500)
 PDF_WORKERS = positive_int_env("PDF_WORKERS", 2)
 _pdf_slots = threading.BoundedSemaphore(PDF_WORKERS)
