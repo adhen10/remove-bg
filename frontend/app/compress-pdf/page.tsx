@@ -3,8 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import SiteHeader from "../../components/SiteHeader";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const MAX_BYTES = 50 * 1024 * 1024;
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
+const DEFAULT_MAX_PDF_MB = 200;
+const configuredMaxPdfMb = Number(process.env.NEXT_PUBLIC_MAX_PDF_MB ?? DEFAULT_MAX_PDF_MB);
+const MAX_PDF_MB =
+    Number.isSafeInteger(configuredMaxPdfMb) && configuredMaxPdfMb > 0
+        ? configuredMaxPdfMb
+        : DEFAULT_MAX_PDF_MB;
+const MAX_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 const LEVELS = [
     { value: "low", label: "Ringan", hint: "Kualitas gambar hampir sama" },
@@ -37,18 +43,31 @@ export default function CompressPdf() {
     }, [resultUrl]);
 
     const pick = (picked: File) => {
-        if (picked.type !== "application/pdf" && !picked.name.toLowerCase().endsWith(".pdf")) {
+        const isPdf =
+            picked.type === "application/pdf" ||
+            picked.name.toLowerCase().endsWith(".pdf");
+
+        if (!isPdf) {
+            setFile(null);
+            setResultUrl(null);
+            setResultSize(0);
             setError("File harus berformat PDF.");
             setStatus("error");
+            if (inputRef.current) inputRef.current.value = "";
             return;
         }
         if (picked.size > MAX_BYTES) {
+            setFile(null);
+            setResultUrl(null);
+            setResultSize(0);
             setError(`Ukuran file maksimal ${formatBytes(MAX_BYTES)}.`);
             setStatus("error");
+            if (inputRef.current) inputRef.current.value = "";
             return;
         }
         setFile(picked);
         setResultUrl(null);
+        setResultSize(0);
         setError(null);
         setStatus("ready");
     };
@@ -58,6 +77,7 @@ export default function CompressPdf() {
         setStatus("loading");
         setError(null);
         setResultUrl(null);
+        setResultSize(0);
 
         try {
             const form = new FormData();
@@ -69,6 +89,13 @@ export default function CompressPdf() {
                 throw new Error(body?.detail ?? "Gagal mengompres PDF.");
             }
             const blob = await res.blob();
+            if (blob.size === 0 || (blob.type && blob.type !== "application/pdf")) {
+                throw new Error("Server tidak mengembalikan PDF yang valid.");
+            }
+            const signature = await blob.slice(0, 5).text();
+            if (signature !== "%PDF-") {
+                throw new Error("Hasil tidak memiliki format PDF yang valid.");
+            }
             setResultSize(blob.size);
             setResultUrl(URL.createObjectURL(blob));
             setStatus("done");
@@ -85,12 +112,14 @@ export default function CompressPdf() {
     const reset = () => {
         setFile(null);
         setResultUrl(null);
+        setResultSize(0);
         setError(null);
         setStatus("idle");
         if (inputRef.current) inputRef.current.value = "";
     };
 
     const saved = file ? Math.max(0, Math.round((1 - resultSize / file.size) * 100)) : 0;
+    const savedBytes = file ? Math.max(0, file.size - resultSize) : 0;
     const downloadName = file
         ? `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`
         : "compressed.pdf";
@@ -140,8 +169,12 @@ export default function CompressPdf() {
                                 <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
                             </svg>
                         </span>
-                        <p className="mt-6 text-lg font-semibold">Tarik file PDF ke sini</p>
-                        <p className="mt-1 text-sm text-stone-500">atau pilih file dari perangkat kamu</p>
+                        <p className="mt-6 text-lg font-semibold">
+                            {dragging ? "Lepaskan PDF untuk memilih file" : "Tarik file PDF ke sini"}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-500">
+                            {dragging ? "File akan diperiksa sebelum diproses." : "atau pilih file dari perangkat kamu"}
+                        </p>
                         <button
                             onClick={() => inputRef.current?.click()}
                             className="mt-6 rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2"
@@ -192,21 +225,30 @@ export default function CompressPdf() {
                                 {LEVELS.map((l) => (
                                     <label
                                         key={l.value}
-                                        className={`cursor-pointer rounded-2xl border px-4 py-3 transition-colors ${level === l.value
-                                                ? "border-[#46745a] bg-[#eaf1ec]"
-                                                : "border-stone-200 bg-white hover:border-stone-300"
-                                            }`}
+                                        className={`pdf-level-card ${level === l.value ? "is-selected" : ""}`}
                                     >
                                         <input
                                             type="radio"
                                             name="level"
                                             value={l.value}
                                             checked={level === l.value}
-                                            onChange={() => setLevel(l.value)}
+                                            onChange={() => {
+                                                if (level !== l.value) {
+                                                    setLevel(l.value);
+                                                    setResultUrl(null);
+                                                    setResultSize(0);
+                                                    if (status === "done") setStatus("ready");
+                                                }
+                                            }}
                                             className="sr-only"
                                         />
-                                        <span className="block text-sm font-medium">{l.label}</span>
-                                        <span className="mt-0.5 block text-xs text-stone-500">{l.hint}</span>
+                                        <span className="pdf-level-top">
+                                            <span className="block text-sm font-medium">{l.label}</span>
+                                            <span className="pdf-level-indicator" aria-hidden="true">
+                                                {level === l.value ? "✓" : ""}
+                                            </span>
+                                        </span>
+                                        <span className="mt-1 block text-xs text-stone-500">{l.hint}</span>
                                     </label>
                                 ))}
                             </div>
@@ -216,37 +258,77 @@ export default function CompressPdf() {
                             <button
                                 onClick={compress}
                                 disabled={status === "loading"}
-                                className="w-full rounded-xl bg-[#46745a] px-5 py-3 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2 disabled:opacity-60"
+                                aria-busy={status === "loading"}
+                                className="pdf-compress-button w-full rounded-xl bg-[#46745a] px-5 py-3 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2 disabled:opacity-60"
                             >
-                                {status === "loading" ? "Memproses, mohon tunggu..." : "Kompres PDF"}
+                                {status === "loading" ? (
+                                    <>
+                                        <span className="pdf-button-spinner" aria-hidden="true" />
+                                        Sedang mengompres...
+                                    </>
+                                ) : (
+                                    <>Kompres PDF <span aria-hidden="true">↗</span></>
+                                )}
                             </button>
                         )}
 
+                        {status === "loading" && (
+                            <div className="pdf-processing" role="status" aria-live="polite">
+                                <span className="pdf-progress-track"><span /></span>
+                                <div className="flex items-center justify-between gap-3">
+                                    <span>Optimasi PDF sedang berjalan</span>
+                                    <span>Mohon tunggu</span>
+                                </div>
+                            </div>
+                        )}
+
                         {status === "error" && (
-                            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+                            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>
                         )}
 
                         {status === "done" && resultUrl && (
-                            <div className="rounded-3xl border border-[#46745a]/25 bg-[#eaf1ec] p-6">
-                                <p className="text-sm text-stone-600">Hasil kompresi</p>
-                                <p className="mt-1 text-2xl font-semibold">
-                                    {formatBytes(file.size)} → {formatBytes(resultSize)}
+                            <div className="pdf-result-panel rounded-3xl border border-[#46745a]/25 bg-[#eaf1ec] p-6">
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="text-sm font-medium text-stone-700">Hasil kompresi</p>
+                                    <span className="pdf-done-mark" aria-label="Kompresi selesai">✓</span>
+                                </div>
+                                <p className="mt-2 text-2xl font-semibold">
+                                    {formatBytes(file.size)} <span className="text-stone-400">→</span> {formatBytes(resultSize)}
                                 </p>
                                 <p className="mt-1 text-sm text-stone-600">
                                     {saved > 0
-                                        ? `Ukuran berkurang ${saved}%.`
-                                        : "File ini sudah cukup optimal, ukurannya tidak berubah."}
+                                        ? `Berkurang ${formatBytes(savedBytes)} (${saved}%).`
+                                        : "Ukuran tidak berkurang pada level ini. Coba level lain jika ingin hasil berbeda."}
                                 </p>
+                                <div className="pdf-saved-track mt-4" aria-label={`Penghematan ukuran ${saved} persen`}>
+                                    <span style={{ width: `${saved}%` }} />
+                                </div>
+                                <div className="mt-2 flex justify-between text-xs text-stone-500">
+                                    <span>Ukuran awal: {formatBytes(file.size)}</span>
+                                    <span>Hasil: {formatBytes(resultSize)}</span>
+                                </div>
                                 <div className="mt-5 flex flex-wrap gap-3">
                                     <a
                                         href={resultUrl}
                                         download={downloadName}
-                                        className="rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350]"
+                                        className="pdf-download-button rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350]"
                                     >
-                                        Unduh PDF
+                                        Unduh PDF <span aria-hidden="true">↓</span>
+                                    </a>
+                                    <a
+                                        href={resultUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                                    >
+                                        Lihat PDF
                                     </a>
                                     <button
-                                        onClick={() => setStatus("ready")}
+                                        onClick={() => {
+                                            setResultUrl(null);
+                                            setResultSize(0);
+                                            setStatus("ready");
+                                        }}
                                         className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-stone-50"
                                     >
                                         Coba tingkat lain

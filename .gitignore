@@ -1,7 +1,33 @@
-@"
-backend/venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+backend/venv/
+.pytest_cache/
+.mypy_cache/
+
+# Environment files
 .env
-.env.local
-"@ | Out-File -Encoding utf8 .gitignore
+.env.*
+!.env.example
+
+# Next.js / Node
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
