@@ -41,6 +41,8 @@ export default function Home() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [outputBytes, setOutputBytes] = useState(0);
+  const [comparePosition, setComparePosition] = useState(50);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -71,6 +73,7 @@ export default function Home() {
       setFile(null);
       setOriginalUrl(null);
       setResultUrl(null);
+      setOutputBytes(0);
       setError("Format yang didukung hanya JPG, PNG, dan WEBP.");
       setStatus("error");
       if (inputRef.current) inputRef.current.value = "";
@@ -80,6 +83,7 @@ export default function Home() {
       setFile(null);
       setOriginalUrl(null);
       setResultUrl(null);
+      setOutputBytes(0);
       setError("Ukuran file maksimal 10 MB.");
       setStatus("error");
       if (inputRef.current) inputRef.current.value = "";
@@ -91,6 +95,8 @@ export default function Home() {
     setFile(picked);
     setOriginalUrl(URL.createObjectURL(picked));
     setResultUrl(null);
+    setOutputBytes(0);
+    setComparePosition(50);
     setError(null);
     setStatus("loading");
 
@@ -112,6 +118,7 @@ export default function Home() {
         throw new Error("Server tidak mengembalikan file PNG yang valid.");
       }
       setResultUrl(URL.createObjectURL(blob));
+      setOutputBytes(blob.size);
       setStatus("done");
     } catch (e) {
       if (controller.signal.aborted) return;
@@ -153,6 +160,8 @@ export default function Home() {
     setFile(null);
     setOriginalUrl(null);
     setResultUrl(null);
+    setOutputBytes(0);
+    setComparePosition(50);
     setError(null);
     setStatus("idle");
     if (inputRef.current) inputRef.current.value = "";
@@ -234,7 +243,7 @@ export default function Home() {
                 </span>
                 <div>
                   <strong>{file?.name ?? "Gambar"}</strong>
-                  <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "File gambar"}</span>
+                  <span>{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "File gambar"}{status === "done" ? ` · PNG ${ (outputBytes / 1024 / 1024).toFixed(2) } MB` : ""}</span>
                 </div>
               </div>
               <span className={`status-label status-${status}`}>
@@ -243,39 +252,87 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="preview-grid">
-              <figure className="preview-card">
-                <figcaption><span>Gambar asli</span></figcaption>
-                <div className="preview-canvas original-canvas">
-                  {originalUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={originalUrl} alt="Gambar asli" />
-                  )}
+            {status === "done" && resultUrl && originalUrl ? (
+              <figure className="compare-card">
+                <figcaption className="compare-caption">
+                  <span>Perbandingan hasil</span>
+                  <span>Geser untuk membandingkan</span>
+                </figcaption>
+                <div className="comparison-stage" style={checkerboard}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={originalUrl}
+                    alt="Gambar asli"
+                    className="comparison-image"
+                    style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resultUrl}
+                    alt="Gambar setelah background dihapus"
+                    className="comparison-image"
+                    style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}
+                  />
+                  <span className="comparison-tag comparison-tag-before">Asli</span>
+                  <span className="comparison-tag comparison-tag-after">Transparan</span>
+                  <span
+                    className="comparison-divider"
+                    style={{ left: `${comparePosition}%` }}
+                    aria-hidden="true"
+                  >
+                    <span className="comparison-knob">
+                      <svg viewBox="0 0 20 20" fill="none">
+                        <path d="m7 5-4 5 4 5M13 5l4 5-4 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={comparePosition}
+                    onChange={(event) => setComparePosition(Number(event.target.value))}
+                    className="comparison-range"
+                    aria-label="Geser untuk membandingkan gambar asli dan hasil transparan"
+                    aria-valuetext={`${comparePosition}% gambar asli terlihat`}
+                  />
+                </div>
+                <div className="compare-range-hint">
+                  <span>← Gambar asli</span>
+                  <span>Hasil transparan →</span>
                 </div>
               </figure>
-              <figure className="preview-card">
-                <figcaption><span>Background transparan</span></figcaption>
-                <div className="preview-canvas result-canvas" style={checkerboard}>
-                  {status === "loading" && (
-                    <div className="processing-state">
-                      <span className="loading-spinner" />
-                      <strong>Menghapus background...</strong>
-                      <small>Mohon tunggu sebentar</small>
-                    </div>
-                  )}
-                  {status === "done" && resultUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={resultUrl} alt="Gambar tanpa background" />
-                  )}
-                  {status === "error" && (
-                    <div className="error-state">
-                      <strong>Gambar gagal diproses</strong>
-                      <span>{error}</span>
-                    </div>
-                  )}
-                </div>
-              </figure>
-            </div>
+            ) : (
+              <div className="preview-grid">
+                <figure className="preview-card">
+                  <figcaption><span>Gambar asli</span></figcaption>
+                  <div className="preview-canvas original-canvas">
+                    {originalUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={originalUrl} alt="Gambar asli" />
+                    )}
+                  </div>
+                </figure>
+                <figure className="preview-card">
+                  <figcaption><span>Background transparan</span></figcaption>
+                  <div className="preview-canvas result-canvas" style={checkerboard}>
+                    {status === "loading" && (
+                      <div className="processing-state">
+                        <span className="loading-spinner" />
+                        <strong>Menghapus background...</strong>
+                        <small>Mohon tunggu sebentar</small>
+                      </div>
+                    )}
+                    {status === "error" && (
+                      <div className="error-state">
+                        <strong>Gambar gagal diproses</strong>
+                        <span>{error}</span>
+                      </div>
+                    )}
+                  </div>
+                </figure>
+              </div>
+            )}
 
             <div className="result-actions">
               {status === "done" && resultUrl && (
