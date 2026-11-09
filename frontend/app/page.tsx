@@ -356,14 +356,14 @@ export default function Home() {
         )}
 
         <div className="tool-footnote">
-          <span>Powered by AI background removal</span>
-          <span>PNG · Transparent</span>
+          <span>Input: JPG, PNG, WEBP</span>
+          <span>Output: PNG transparan</span>
         </div>
       </section>
 
       <footer className="app-footer">
         <span>remove-bg</span>
-        <span>Simple image processing tool</span>
+        <span>Image tools · remove-bg</span>
       </footer>
     </main>
   );
