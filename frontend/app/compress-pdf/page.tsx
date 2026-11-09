@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import SiteHeader from "../../components/SiteHeader";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 const MAX_BYTES = 50 * 1024 * 1024;
 
 const LEVELS = [
@@ -71,6 +71,7 @@ export default function CompressPdf() {
         setStatus("loading");
         setError(null);
         setResultUrl(null);
+        setResultSize(0);
 
         try {
             const form = new FormData();
