@@ -47,11 +47,16 @@ export default function Home() {
 
   useEffect(() => {
     return () => {
-      requestControllerRef.current?.abort();
       if (originalUrl) URL.revokeObjectURL(originalUrl);
       if (resultUrl) URL.revokeObjectURL(resultUrl);
     };
   }, [originalUrl, resultUrl]);
+
+  useEffect(() => {
+    return () => {
+      requestControllerRef.current?.abort();
+    };
+  }, []);
 
   const process = useCallback(async (picked: File) => {
     requestControllerRef.current?.abort();
@@ -206,7 +211,7 @@ export default function Home() {
             <input
               ref={inputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
               className="hidden"
               onChange={(e) => {
                 const picked = e.target.files?.[0];
