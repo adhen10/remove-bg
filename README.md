@@ -105,6 +105,6 @@ python -m compileall -q backend
 
 Deploy the Next.js frontend and FastAPI backend as separate services. Set `NEXT_PUBLIC_API_URL` to the public backend URL and configure `ALLOWED_ORIGINS` with the exact frontend origin(s). Use HTTPS in production.
 
-The backend keeps processing concurrency bounded, but CPU and memory requirements still depend on model size and uploaded documents. Start with conservative worker values and monitor the host before increasing them.
+The backend keeps processing concurrency bounded per Python worker process, but CPU and memory requirements still depend on model size and uploaded documents. Start with conservative worker values and monitor the host before increasing them. Also configure a request-body limit at the reverse proxy / hosting layer (for example, Nginx `client_max_body_size`) so oversized multipart requests are rejected before they are spooled by the ASGI server.
 
 **Licensing note:** PyMuPDF is distributed under AGPL-3.0 or a commercial license. Review the applicable license obligations before using this project in a proprietary hosted service.
