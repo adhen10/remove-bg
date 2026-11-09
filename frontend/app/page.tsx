@@ -412,7 +412,11 @@ export default function Home() {
                   <figure className="single-result-card">
                     <figcaption className="compare-caption">
                       <span>Hasil PNG transparan</span>
-                      <span>{outputDimensions ? `${outputDimensions.width} × ${outputDimensions.height} px` : "PNG"}</span>
+                      <span>
+                        {outputDimensions
+                          ? `${outputDimensions.width} × ${outputDimensions.height} px`
+                          : "PNG"}
+                      </span>
                     </figcaption>
                     <div className="single-result-stage" style={activePreviewStyle}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -431,55 +435,6 @@ export default function Home() {
                   <span>
                     Ukuran PNG: <strong>{(outputBytes / 1024 / 1024).toFixed(2)} MB</strong>
                   </span>
-                </div>
-              </div>
-            ) : (
-                <figcaption className="compare-caption">
-                  <span>Perbandingan hasil</span>
-                  <span>Geser untuk membandingkan</span>
-                </figcaption>
-                <div className="comparison-stage" style={checkerboard}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={originalUrl}
-                    alt="Gambar asli"
-                    className="comparison-image"
-                    style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resultUrl}
-                    alt="Gambar setelah background dihapus"
-                    className="comparison-image"
-                    style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}
-                  />
-                  <span className="comparison-tag comparison-tag-before">Asli</span>
-                  <span className="comparison-tag comparison-tag-after">Transparan</span>
-                  <span
-                    className="comparison-divider"
-                    style={{ left: `${comparePosition}%` }}
-                    aria-hidden="true"
-                  >
-                    <span className="comparison-knob">
-                      <svg viewBox="0 0 20 20" fill="none">
-                        <path d="m7 5-4 5 4 5M13 5l4 5-4 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={comparePosition}
-                    onChange={(event) => setComparePosition(Number(event.target.value))}
-                    className="comparison-range"
-                    aria-label="Geser untuk membandingkan gambar asli dan hasil transparan"
-                    aria-valuetext={`${comparePosition}% gambar asli terlihat`}
-                  />
-                </div>
-                <div className="compare-range-hint">
-                  <span>← Gambar asli</span>
-                  <span>Hasil transparan →</span>
                 </div>
               </div>
             ) : (
@@ -514,11 +469,6 @@ export default function Home() {
               </div>
             )}
 
-            {copyMessage && status === "done" && (
-              <p className={`copy-feedback ${copyMessage.startsWith("PNG berhasil") ? "is-success" : "is-error"}`} role="status">
-                {copyMessage}
-              </p>
-            )}
             <div className="result-actions">
               {status === "done" && resultUrl && (
                 <>
