@@ -547,3 +547,21 @@ kbd {
   0% { transform: translateX(-110%); }
   100% { transform: translateX(320%); }
 }
+
+
+.site-tab { transition: color .16s ease, background .16s ease, transform .16s ease; }
+.site-tab:hover { transform: translateY(-1px); }
+.site-tab:active { transform: translateY(0) scale(.98); }
+.pdf-level-card:focus-within {
+  outline: 2px solid #7fa587;
+  outline-offset: 2px;
+}
+@media (max-width: 520px) {
+  .site-header-bar { justify-content: center; padding: 14px 14px; gap: 12px; }
+  .site-tab-list { gap: 2px; }
+  .site-tab { padding: 7px 11px !important; font-size: 11px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-tab, .pdf-level-card, .pdf-download-button, .pdf-saved-track > span { transition: none !important; }
+  .pdf-progress-track > span { animation: none !important; width: 100%; }
+}
