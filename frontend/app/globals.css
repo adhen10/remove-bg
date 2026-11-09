@@ -565,3 +565,12 @@ kbd {
   .site-tab, .pdf-level-card, .pdf-download-button, .pdf-saved-track > span { transition: none !important; }
   .pdf-progress-track > span { animation: none !important; width: 100%; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
