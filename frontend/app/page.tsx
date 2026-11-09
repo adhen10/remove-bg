@@ -60,28 +60,6 @@ export default function Home() {
   }, [originalUrl, resultUrl]);
 
   useEffect(() => {
-    if (!originalUrl) {
-      setInputDimensions(null);
-      return;
-    }
-    const image = new window.Image();
-    image.onload = () => setInputDimensions({ width: image.naturalWidth, height: image.naturalHeight });
-    image.src = originalUrl;
-    return () => { image.onload = null; };
-  }, [originalUrl]);
-
-  useEffect(() => {
-    if (!resultUrl) {
-      setOutputDimensions(null);
-      return;
-    }
-    const image = new window.Image();
-    image.onload = () => setOutputDimensions({ width: image.naturalWidth, height: image.naturalHeight });
-    image.src = resultUrl;
-    return () => { image.onload = null; };
-  }, [resultUrl]);
-
-  useEffect(() => {
     return () => {
       requestControllerRef.current?.abort();
     };
@@ -122,6 +100,8 @@ export default function Home() {
     setFile(picked);
     setOriginalUrl(URL.createObjectURL(picked));
     setResultUrl(null);
+    setInputDimensions(null);
+    setOutputDimensions(null);
     setOutputBytes(0);
     setComparePosition(50);
     setPreviewMode("compare");
@@ -190,6 +170,8 @@ export default function Home() {
     setFile(null);
     setOriginalUrl(null);
     setResultUrl(null);
+    setInputDimensions(null);
+    setOutputDimensions(null);
     setOutputBytes(0);
     setComparePosition(50);
     setPreviewMode("compare");
@@ -371,6 +353,7 @@ export default function Home() {
                       <img
                         src={originalUrl}
                         alt="Gambar asli"
+                        onLoad={(event) => setInputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
                         className="comparison-image"
                         style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
                       />
@@ -378,6 +361,7 @@ export default function Home() {
                       <img
                         src={resultUrl}
                         alt="Gambar setelah background dihapus"
+                        onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
                         className="comparison-image"
                         style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }}
                       />
@@ -422,7 +406,11 @@ export default function Home() {
                     </figcaption>
                     <div className="single-result-stage" style={activePreviewStyle}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={resultUrl} alt="Hasil PNG tanpa background" />
+                      <img
+                        src={resultUrl}
+                        alt="Hasil PNG tanpa background"
+                        onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+                      />
                     </div>
                   </figure>
                 )}
@@ -446,7 +434,11 @@ export default function Home() {
                   <div className="preview-canvas original-canvas">
                     {originalUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={originalUrl} alt="Gambar asli" />
+                      <img
+                        src={originalUrl}
+                        alt="Gambar asli"
+                        onLoad={(event) => setInputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+                      />
                     )}
                   </div>
                 </figure>
