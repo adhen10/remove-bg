@@ -45,6 +45,10 @@ IMAGE_WORKERS = positive_int_env("IMAGE_WORKERS", 1)
 ALLOWED_IMAGE_FORMATS = ("JPEG", "PNG", "WEBP")
 _image_slots = threading.BoundedSemaphore(IMAGE_WORKERS)
 
+# Let Pillow reject decompression bombs at the same pixel limit used by
+# this service. The warning is promoted to an exception per decode below.
+Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+
 # Compress PDF limits
 MAX_PDF_BYTES = positive_int_env("MAX_PDF_MB", 50) * 1024 * 1024
 MAX_PDF_PAGES = positive_int_env("MAX_PDF_PAGES", 500)
@@ -70,16 +74,16 @@ app.add_middleware(
 session = new_session("u2net")
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+def image_too_large() -> HTTPException:
+    return HTTPException(
+        413, f"Resolusi gambar terlalu besar. Maksimal {MAX_IMAGE_PIXELS:,} piksel."
+    )
 
 
 def _remove_background(data: bytes) -> bytes:
     """Decode, validate, process, and encode an uploaded image."""
     try:
         with warnings.catch_warnings():
-            # Treat Pillow's decompression-bomb warning as a rejected upload.
             warnings.simplefilter("error", Image.DecompressionBombWarning)
 
             with Image.open(
@@ -92,14 +96,12 @@ def _remove_background(data: bytes) -> bytes:
                     )
 
                 if source.width * source.height > MAX_IMAGE_PIXELS:
-                    raise HTTPException(
-                        413,
-                        f"Resolusi gambar terlalu besar. Maksimal {MAX_IMAGE_PIXELS:,} piksel.",
-                    )
+                    raise image_too_large()
 
                 if getattr(source, "n_frames", 1) > 1:
                     raise HTTPException(
-                        400, "Gambar animasi belum didukung. Gunakan JPG, PNG, atau WEBP statis."
+                        400,
+                        "Gambar animasi belum didukung. Gunakan JPG, PNG, atau WEBP statis.",
                     )
 
                 source.load()
@@ -107,10 +109,10 @@ def _remove_background(data: bytes) -> bytes:
 
     except HTTPException:
         raise
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+        raise image_too_large() from exc
     except (
         Image.UnidentifiedImageError,
-        Image.DecompressionBombError,
-        Image.DecompressionBombWarning,
         OSError,
         ValueError,
     ) as exc:
@@ -127,27 +129,29 @@ def _remove_background(data: bytes) -> bytes:
     return output.getvalue()
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/remove-bg")
 async def remove_bg(file: UploadFile = File(...)):
-    try:
-        # Read at most one byte above the limit; avoid copying an unbounded
-        # upload into process memory.
-        data = await file.read(MAX_IMAGE_BYTES + 1)
-    finally:
-        await file.close()
-
-    if len(data) > MAX_IMAGE_BYTES:
-        raise HTTPException(
-            413,
-            f"File terlalu besar. Maksimal {MAX_IMAGE_BYTES // (1024 * 1024)} MB.",
-        )
-
     if not _image_slots.acquire(blocking=False):
+        await file.close()
         raise HTTPException(
             503, "Server sedang memproses gambar lain. Coba lagi sebentar."
         )
 
     try:
+        # Read only one byte above the limit. The slot is held during the
+        # upload read and model inference to bound concurrent memory use.
+        data = await file.read(MAX_IMAGE_BYTES + 1)
+        if len(data) > MAX_IMAGE_BYTES:
+            raise HTTPException(
+                413,
+                f"File terlalu besar. Maksimal {MAX_IMAGE_BYTES // (1024 * 1024)} MB.",
+            )
+
         try:
             # rembg / ONNX inference is synchronous. Keep it off the ASGI
             # event loop so health checks and other requests can still respond.
@@ -159,31 +163,33 @@ async def remove_bg(file: UploadFile = File(...)):
             raise HTTPException(
                 500, "Gagal memproses gambar. Silakan coba lagi."
             ) from exc
+        return Response(content=output, media_type="image/png")
     finally:
+        await file.close()
         _image_slots.release()
-
-    return Response(content=output, media_type="image/png")
 
 
 # A sync route is dispatched through Starlette's worker thread pool.
 @app.post("/compress-pdf")
 def compress_pdf(file: UploadFile = File(...), level: str = Form("medium")):
     if level not in PDF_LEVELS:
+        file.file.close()
         raise HTTPException(400, "Level harus low, medium, atau high.")
 
-    data = file.file.read(MAX_PDF_BYTES + 1)
-    if len(data) > MAX_PDF_BYTES:
-        raise HTTPException(
-            413,
-            f"File terlalu besar, maksimal {MAX_PDF_BYTES // (1024 * 1024)} MB.",
-        )
-    if not data.startswith(b"%PDF-"):
-        raise HTTPException(400, "File bukan PDF yang valid.")
-
     if not _pdf_slots.acquire(blocking=False):
+        file.file.close()
         raise HTTPException(503, "Server sedang sibuk, coba lagi sebentar lagi.")
 
     try:
+        data = file.file.read(MAX_PDF_BYTES + 1)
+        if len(data) > MAX_PDF_BYTES:
+            raise HTTPException(
+                413,
+                f"File terlalu besar, maksimal {MAX_PDF_BYTES // (1024 * 1024)} MB.",
+            )
+        if not data.startswith(b"%PDF-"):
+            raise HTTPException(400, "File bukan PDF yang valid.")
+
         try:
             doc = pymupdf.open(stream=data, filetype="pdf")
         except Exception as exc:
@@ -224,11 +230,12 @@ def compress_pdf(file: UploadFile = File(...), level: str = Form("medium")):
                 raise HTTPException(500, "Gagal mengompres PDF.") from exc
         finally:
             doc.close()
+
+        # If compression did not reduce the file, return the original.
+        if len(output) >= len(data):
+            output = data
+
+        return Response(content=output, media_type="application/pdf")
     finally:
+        file.file.close()
         _pdf_slots.release()
-
-    # If compression did not reduce the file, return the original.
-    if len(output) >= len(data):
-        output = data
-
-    return Response(content=output, media_type="application/pdf")
