@@ -55,7 +55,7 @@ warnings.simplefilter("error", Image.DecompressionBombWarning)
 # Compress PDF limits
 MAX_PDF_BYTES = positive_int_env("MAX_PDF_MB", 200) * 1024 * 1024
 MAX_PDF_PAGES = positive_int_env("MAX_PDF_PAGES", 500)
-PDF_WORKERS = positive_int_env("PDF_WORKERS", 2)
+PDF_WORKERS = positive_int_env("PDF_WORKERS", 1)
 _pdf_slots = threading.BoundedSemaphore(PDF_WORKERS)
 
 # Images above dpi_threshold are downsampled to dpi_target.
