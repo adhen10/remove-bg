@@ -482,7 +482,7 @@ export default function Home() {
               {status === "error" && file && (
                 <button onClick={() => process(file)} className="primary-button">Coba lagi</button>
               )}
-              <button onClick={reset} className="secondary-button">Pilih gambar lain</button>
+              <button onClick={reset} className="secondary-button">{status === "loading" ? "Batalkan proses" : "Pilih gambar lain"}</button>
             </div>
           </section>
         )}
