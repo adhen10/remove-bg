@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import SiteHeader from "../../components/SiteHeader";
+import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 const DEFAULT_MAX_PDF_MB = 200;
@@ -13,9 +13,9 @@ const MAX_PDF_MB =
 const MAX_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 const LEVELS = [
-    { value: "low", label: "Ringan", hint: "Kualitas gambar hampir sama" },
-    { value: "medium", label: "Sedang", hint: "Seimbang, cocok untuk kebanyakan file" },
-    { value: "high", label: "Maksimal", hint: "File paling kecil, gambar agak turun" },
+    { value: "low", label: "Ringan", hint: "Pertahankan kualitas gambar", detail: "Kompresi lebih lembut", badge: "Kualitas utama" },
+    { value: "medium", label: "Seimbang", hint: "Ukuran dan kualitas seimbang", detail: "Pilihan untuk penggunaan umum", badge: "Rekomendasi" },
+    { value: "high", label: "Maksimal", hint: "Prioritaskan ukuran paling kecil", detail: "Kualitas gambar dapat menurun", badge: "Ukuran minimum" },
 ] as const;
 
 type Level = (typeof LEVELS)[number]["value"];
@@ -115,6 +115,7 @@ export default function CompressPdf() {
         setResultSize(0);
         setError(null);
         setStatus("idle");
+        setLevel("medium");
         if (inputRef.current) inputRef.current.value = "";
     };
 
@@ -123,227 +124,202 @@ export default function CompressPdf() {
     const downloadName = file
         ? `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`
         : "compressed.pdf";
+    const selectedLevel = LEVELS.find((item) => item.value === level)!;
 
     return (
-        <div className="flex min-h-screen flex-col text-stone-900">
+        <main className="workspace-shell">
             <SiteHeader />
 
-            <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                        Kecilkan ukuran PDF
-                    </h1>
-                    <p className="mt-2 text-sm text-stone-500">
-                        Cocok untuk PDF hasil scan atau banyak gambar. File tidak disimpan di server.
-                    </p>
+            <div className="workspace-main">
+                <header className="workspace-hero">
+                    <div>
+                        <span className="workspace-kicker">Document studio / PDF optimizer</span>
+                        <h1 className="workspace-title">PDF lebih ringan.<br /><span className="text-[#43815a]">Tetap siap dibagikan.</span></h1>
+                        <p className="workspace-subtitle">
+                            Optimalkan ukuran dokumen, terutama PDF hasil scan atau yang berisi banyak gambar. Pilih keseimbangan kualitas dan ukuran sesuai kebutuhan.
+                        </p>
+                    </div>
+                    <div className="workspace-hero-meta">
+                        <span className="meta-pill">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            File tidak disimpan
+                        </span>
+                        <span className="meta-pill">Maks. {formatBytes(MAX_BYTES)}</span>
+                    </div>
                 </header>
 
-                {!file && (
-                    <div
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                            setDragging(true);
-                        }}
-                        onDragLeave={() => setDragging(false)}
-                        onDrop={(e) => {
-                            e.preventDefault();
-                            setDragging(false);
-                            const dropped = e.dataTransfer.files?.[0];
-                            if (dropped) pick(dropped);
-                        }}
-                        className={`flex flex-col items-center rounded-3xl border border-dashed px-6 py-14 text-center transition-colors ${dragging ? "border-[#46745a] bg-[#eaf1ec]" : "border-stone-300 bg-white"
-                            }`}
-                    >
-                        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf1ec] text-[#46745a]">
-                            <svg
-                                width="28"
-                                height="28"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                            >
-                                <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
-                            </svg>
-                        </span>
-                        <p className="mt-6 text-lg font-semibold">
-                            {dragging ? "Lepaskan PDF untuk memilih file" : "Tarik file PDF ke sini"}
-                        </p>
-                        <p className="mt-1 text-sm text-stone-500">
-                            {dragging ? "File akan diperiksa sebelum diproses." : "atau pilih file dari perangkat kamu"}
-                        </p>
-                        <button
-                            onClick={() => inputRef.current?.click()}
-                            className="mt-6 rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2"
-                        >
-                            Pilih PDF
-                        </button>
-                        <p className="mt-6 text-xs font-medium text-stone-500">
-                            PDF &nbsp;•&nbsp; Maks. {formatBytes(MAX_BYTES)}
-                        </p>
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept="application/pdf,.pdf"
-                            className="hidden"
-                            onChange={(e) => {
-                                const picked = e.target.files?.[0];
-                                if (picked) pick(picked);
-                            }}
-                        />
-                    </div>
-                )}
+                <div className="workspace-stepper" aria-label="Tahapan kompresi PDF">
+                    <span className={`workflow-step ${file ? "is-complete" : "is-current"}`}><b>{file ? "✓" : "1"}</b> Pilih PDF</span>
+                    <span className="workflow-connector" />
+                    <span className={`workflow-step ${file && status !== "done" ? "is-current" : status === "done" ? "is-complete" : ""}`}><b>{status === "done" ? "✓" : "2"}</b> Atur kompresi</span>
+                    <span className="workflow-connector" />
+                    <span className={`workflow-step ${status === "done" ? "is-complete" : ""}`}><b>{status === "done" ? "✓" : "3"}</b> Unduh hasil</span>
+                </div>
 
-                {status === "error" && !file && (
-                    <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-                )}
-
-                {file && (
-                    <section className="space-y-6">
-                        <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-5 py-4">
-                            <div className="min-w-0">
-                                <p className="truncate font-medium">{file.name}</p>
-                                <p className="text-sm text-stone-500">{formatBytes(file.size)}</p>
+                <div className="workspace-grid">
+                    <section className="workspace-panel">
+                        <div className="panel-heading">
+                            <div>
+                                <p className="panel-eyebrow">Workspace</p>
+                                <h2 className="panel-title">{file ? "Pengaturan kompresi" : "Pilih dokumen PDF"}</h2>
+                                <p className="panel-description">{file ? "Tentukan seberapa agresif gambar di dalam PDF akan dioptimalkan." : "Unggah PDF untuk melihat pilihan tingkat kompresi."}</p>
                             </div>
-                            <button
-                                onClick={reset}
-                                disabled={status === "loading"}
-                                className="text-sm text-stone-500 hover:text-stone-900 disabled:opacity-50"
-                            >
-                                Ganti file
-                            </button>
+                            <span className="meta-pill">{status === "loading" ? "Mengoptimalkan" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
                         </div>
 
-                        <fieldset disabled={status === "loading"}>
-                            <legend className="mb-2 text-sm font-medium text-stone-600">
-                                Tingkat kompresi
-                            </legend>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {LEVELS.map((l) => (
-                                    <label
-                                        key={l.value}
-                                        className={`pdf-level-card ${level === l.value ? "is-selected" : ""}`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="level"
-                                            value={l.value}
-                                            checked={level === l.value}
-                                            onChange={() => {
-                                                if (level !== l.value) {
-                                                    setLevel(l.value);
-                                                    setResultUrl(null);
-                                                    setResultSize(0);
-                                                    if (status === "done") setStatus("ready");
-                                                }
-                                            }}
-                                            className="sr-only"
-                                        />
-                                        <span className="pdf-level-top">
-                                            <span className="block text-sm font-medium">{l.label}</span>
-                                            <span className="pdf-level-indicator" aria-hidden="true">
-                                                {level === l.value ? "✓" : ""}
-                                            </span>
-                                        </span>
-                                        <span className="mt-1 block text-xs text-stone-500">{l.hint}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </fieldset>
-
-                        {status !== "done" && (
-                            <button
-                                onClick={compress}
-                                disabled={status === "loading"}
-                                aria-busy={status === "loading"}
-                                className="pdf-compress-button w-full rounded-xl bg-[#46745a] px-5 py-3 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2 disabled:opacity-60"
+                        {!file && (
+                            <div
+                                onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+                                onDragLeave={() => setDragging(false)}
+                                onDrop={(event) => { event.preventDefault(); setDragging(false); const dropped = event.dataTransfer.files?.[0]; if (dropped) pick(dropped); }}
+                                onClick={(event) => { if (event.target !== inputRef.current) inputRef.current?.click(); }}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
+                                className={`dropzone ${dragging ? "is-dragging" : ""}`}
+                                aria-label="Pilih atau tarik file PDF ke area ini"
                             >
-                                {status === "loading" ? (
-                                    <>
-                                        <span className="pdf-button-spinner" aria-hidden="true" />
-                                        Sedang mengompres...
-                                    </>
-                                ) : (
-                                    <>Kompres PDF <span aria-hidden="true">↗</span></>
-                                )}
-                            </button>
-                        )}
-
-                        {status === "loading" && (
-                            <div className="pdf-processing" role="status" aria-live="polite">
-                                <span className="pdf-progress-track"><span /></span>
-                                <div className="flex items-center justify-between gap-3">
-                                    <span>Optimasi PDF sedang berjalan</span>
-                                    <span>Mohon tunggu</span>
-                                </div>
+                                <span className="dropzone-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/></svg>
+                                </span>
+                                <h3 className="dropzone-title">{dragging ? "Lepaskan PDF untuk memilih file" : "Tarik file PDF ke area ini"}</h3>
+                                <p className="dropzone-copy">{dragging ? "File akan diperiksa sebelum diproses." : "atau pilih dokumen dari perangkat kamu."}</p>
+                                <span className="dropzone-button">Pilih PDF <span aria-hidden="true">↗</span></span>
+                                <div className="dropzone-footer"><span className="file-format-chip">PDF</span><span>Maks. {formatBytes(MAX_BYTES)}</span></div>
+                                <input ref={inputRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={(event) => { const picked = event.target.files?.[0]; if (picked) pick(picked); }} />
                             </div>
                         )}
 
-                        {status === "error" && (
-                            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>
-                        )}
+                        {status === "error" && !file && <div className="workspace-alert" role="alert">{error}</div>}
 
-                        {status === "done" && resultUrl && (
-                            <div className="pdf-result-panel rounded-3xl border border-[#46745a]/25 bg-[#eaf1ec] p-6">
-                                <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-medium text-stone-700">Hasil kompresi</p>
-                                    <span className="pdf-done-mark" aria-label="Kompresi selesai">✓</span>
+                        {file && (
+                            <div className="space-y-4">
+                                <div className="file-summary">
+                                    <div className="file-summary-main">
+                                        <span className="file-type-icon">PDF</span>
+                                        <div className="min-w-0">
+                                            <div className="file-summary-name">{file.name}</div>
+                                            <div className="file-summary-meta">{formatBytes(file.size)} · Dokumen PDF</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" onClick={reset} disabled={status === "loading"} className="file-summary-action">Ganti file</button>
                                 </div>
-                                <p className="mt-2 text-2xl font-semibold">
-                                    {formatBytes(file.size)} <span className="text-stone-400">→</span> {formatBytes(resultSize)}
-                                </p>
-                                <p className="mt-1 text-sm text-stone-600">
-                                    {saved > 0
-                                        ? `Berkurang ${formatBytes(savedBytes)} (${saved}%).`
-                                        : "Ukuran tidak berkurang pada level ini. Coba level lain jika ingin hasil berbeda."}
-                                </p>
-                                <div className="pdf-saved-track mt-4" aria-label={`Penghematan ukuran ${saved} persen`}>
-                                    <span style={{ width: `${saved}%` }} />
+
+                                <fieldset disabled={status === "loading"}>
+                                    <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                                        <div>
+                                            <p className="panel-eyebrow">Compression level</p>
+                                            <legend className="panel-title">Pilih tingkat kompresi</legend>
+                                        </div>
+                                        <span className="text-[9px] text-[#8b978e]">Pilih kartu untuk melihat pilihan</span>
+                                    </div>
+                                    <div className="grid gap-3 sm:grid-cols-3">
+                                        {LEVELS.map((item) => (
+                                            <label key={item.value} className={`pdf-level-card ${level === item.value ? "is-selected" : ""}`}>
+                                                <input type="radio" name="level" value={item.value} checked={level === item.value} onChange={() => {
+                                                    if (level !== item.value) {
+                                                        setLevel(item.value);
+                                                        setResultUrl(null);
+                                                        setResultSize(0);
+                                                        if (status === "done" || status === "error") setStatus("ready");
+                                                    }
+                                                }} className="sr-only" />
+                                                <span className="pdf-level-top">
+                                                    <span className="block text-sm font-medium">{item.label}</span>
+                                                    <span className="pdf-level-indicator" aria-hidden="true">{level === item.value ? "✓" : ""}</span>
+                                                </span>
+                                                {item.value === "medium" && <span className="mt-2 inline-flex rounded-full bg-[#e8f3e9] px-2 py-1 text-[8px] font-bold text-[#48805a]">RECOMMENDED</span>}
+                                                <span className="mt-2 block text-xs text-stone-500">{item.hint}</span>
+                                                <span className="mt-1 block text-[9px] text-[#9aa49d]">{item.detail}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </fieldset>
+
+                                <div className="setting-box">
+                                    <div className="setting-heading">
+                                        <span className="setting-label">Pilihan kamu</span>
+                                        <span className="setting-value !text-[12px]">{selectedLevel.label}</span>
+                                    </div>
+                                    <p className="panel-description mt-2">{selectedLevel.detail}. {selectedLevel.hint}.</p>
                                 </div>
-                                <div className="mt-2 flex justify-between text-xs text-stone-500">
-                                    <span>Ukuran awal: {formatBytes(file.size)}</span>
-                                    <span>Hasil: {formatBytes(resultSize)}</span>
-                                </div>
-                                <div className="mt-5 flex flex-wrap gap-3">
-                                    <a
-                                        href={resultUrl}
-                                        download={downloadName}
-                                        className="pdf-download-button rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350]"
-                                    >
-                                        Unduh PDF <span aria-hidden="true">↓</span>
-                                    </a>
-                                    <a
-                                        href={resultUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                                    >
-                                        Lihat PDF
-                                    </a>
-                                    <button
-                                        onClick={() => {
-                                            setResultUrl(null);
-                                            setResultSize(0);
-                                            setStatus("ready");
-                                        }}
-                                        className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium hover:bg-stone-50"
-                                    >
-                                        Coba tingkat lain
+
+                                {status !== "done" && (
+                                    <button onClick={compress} disabled={status === "loading"} aria-busy={status === "loading"} className="action-primary w-full">
+                                        {status === "loading" ? <><span className="processing-orbit !h-4 !w-4 !border-white/40 !border-t-white" /> Mengompres PDF...</> : <>Mulai kompres PDF <span aria-hidden="true">↗</span></>}
                                     </button>
-                                </div>
+                                )}
+
+                                {status === "loading" && (
+                                    <div className="processing-card" role="status" aria-live="polite">
+                                        <span className="processing-orbit" />
+                                        <div className="processing-copy"><strong>PDF sedang dioptimalkan...</strong><span>Ukuran dan gambar di dalam dokumen sedang diproses. Persentase progres tidak ditampilkan karena durasi tiap file berbeda.</span></div>
+                                    </div>
+                                )}
+
+                                {status === "error" && <div className="workspace-alert" role="alert">{error}</div>}
+
+                                {status === "done" && resultUrl && (
+                                    <div className="space-y-4">
+                                        <div className="workspace-success flex items-center justify-between gap-3">
+                                            <div><strong className="block text-[11px]">Kompresi selesai</strong><span className="mt-1 block text-[9px]">Hasil PDF siap disimpan atau dilihat.</span></div>
+                                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#dceede] text-sm font-bold text-[#39734a]">✓</span>
+                                        </div>
+                                        <div className="workspace-panel !p-4 !shadow-none">
+                                            <p className="panel-eyebrow">Ukuran file</p>
+                                            <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                                <div><span className="block text-[9px] text-[#91a096]">Sebelum</span><strong className="mt-1 block text-[18px] font-extrabold text-[#526157]">{formatBytes(file.size)}</strong></div>
+                                                <span className="text-lg text-[#9aa89d]">→</span>
+                                                <div><span className="block text-[9px] text-[#91a096]">Sesudah</span><strong className="mt-1 block text-[18px] font-extrabold text-[#2f7651]">{formatBytes(resultSize)}</strong></div>
+                                            </div>
+                                            <div className="mt-4 flex items-center justify-between text-[9px] text-[#7d8d80]">
+                                                <span>{saved > 0 ? `Penghematan ${saved}%` : "Tidak ada pengurangan ukuran"}</span>
+                                                <strong>{saved > 0 ? `−${formatBytes(savedBytes)}` : "0 B"}</strong>
+                                            </div>
+                                            <div className="pdf-saved-track mt-2 !bg-[#e9f0e9]"><span style={{ width: `${saved}%` }} /></div>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <a href={resultUrl} download={downloadName} className="action-primary">
+                                                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2"/></svg>
+                                                Unduh PDF
+                                            </a>
+                                            <a href={resultUrl} target="_blank" rel="noreferrer" className="action-secondary">Lihat PDF</a>
+                                            <button type="button" onClick={() => { setResultUrl(null); setResultSize(0); setStatus("ready"); }} className="action-secondary">Coba level lain</button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </section>
-                )}
-            </main>
 
-            <footer className="mx-auto flex w-full max-w-6xl justify-between border-t border-black/10 px-6 py-6 text-xs text-stone-500">
-                <span>remove-bg</span>
-                <span>Simple image processing tool</span>
+                    <aside className="workspace-rail">
+                        <div className="rail-card is-dark">
+                            <p className="rail-card-label">Tingkat terpilih</p>
+                            <h3 className="rail-card-title">{selectedLevel.label}</h3>
+                            <p className="rail-card-copy">{selectedLevel.detail}. {selectedLevel.hint}.</p>
+                            <div className="mt-4 border-t border-white/15 pt-3 text-[9px] font-semibold text-[#d6e8d8]">PDF · Optimasi dokumen</div>
+                        </div>
+                        <div className="rail-card">
+                            <p className="rail-card-label">Panduan pilihan</p>
+                            <ul className="rail-list">
+                                <li><i>1</i><span><b>Ringan</b> untuk dokumen yang perlu menjaga kualitas gambar.</span></li>
+                                <li><i>2</i><span><b>Seimbang</b> untuk penggunaan sehari-hari.</span></li>
+                                <li><i>3</i><span><b>Maksimal</b> saat ukuran file menjadi prioritas.</span></li>
+                            </ul>
+                        </div>
+                        <div className="rail-card">
+                            <p className="rail-card-label">Informasi file</p>
+                            <h3 className="rail-card-title">Pemrosesan lokal? Bukan.</h3>
+                            <p className="rail-card-copy">File dikirim ke layanan backend untuk dikompres selama proses berlangsung dan tidak disimpan sebagai arsip aplikasi.</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <footer className="workspace-footer">
+                <span><strong>remove-bg</strong> · Document workspace</span>
+                <span>Simple tools, cleaner workflow.</span>
             </footer>
-        </div>
+        </main>
     );
 }
