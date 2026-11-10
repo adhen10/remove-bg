@@ -13,9 +13,9 @@ const MAX_PDF_MB =
 const MAX_BYTES = MAX_PDF_MB * 1024 * 1024;
 
 const LEVELS = [
-    { value: "low", label: "Ringan", hint: "Pertahankan kualitas gambar", detail: "Kompresi lebih lembut", badge: "Kualitas utama" },
-    { value: "medium", label: "Seimbang", hint: "Ukuran dan kualitas seimbang", detail: "Pilihan untuk penggunaan umum", badge: "Rekomendasi" },
-    { value: "high", label: "Maksimal", hint: "Prioritaskan ukuran paling kecil", detail: "Kualitas gambar dapat menurun", badge: "Ukuran minimum" },
+    { value: "low", label: "Ringan", hint: "Kualitas" },
+    { value: "medium", label: "Seimbang", hint: "Seimbang" },
+    { value: "high", label: "Maksimal", hint: "Ukuran kecil" },
 ] as const;
 
 type Level = (typeof LEVELS)[number]["value"];
@@ -124,7 +124,6 @@ export default function CompressPdf() {
     const downloadName = file
         ? `${file.name.replace(/\.pdf$/i, "")}-compressed.pdf`
         : "compressed.pdf";
-    const selectedLevel = LEVELS.find((item) => item.value === level)!;
 
     return (
         <main className="workspace-shell">
@@ -140,9 +139,9 @@ export default function CompressPdf() {
                     <section className="workspace-panel">
                         <div className="panel-heading">
                             <div>
-                                <p className="panel-eyebrow">Workspace</p>
-                                <h2 className="panel-title">{file ? "Pengaturan kompresi" : "Pilih dokumen PDF"}</h2>
-                                <p className="panel-description">{file ? "Tentukan seberapa agresif gambar di dalam PDF akan dioptimalkan." : "Unggah PDF untuk melihat pilihan tingkat kompresi."}</p>
+                                
+                                <h2 className="panel-title">{file ? "Pengaturan" : "Dokumen PDF"}</h2>
+                                
                             </div>
                             <span className="meta-pill">{status === "loading" ? "Mengoptimalkan" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
                         </div>
@@ -163,7 +162,7 @@ export default function CompressPdf() {
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 15.5h5"/></svg>
                                 </span>
                                 <h3 className="dropzone-title">{dragging ? "Lepaskan PDF untuk memilih file" : "Tarik file PDF ke area ini"}</h3>
-                                <p className="dropzone-copy">{dragging ? "File akan diperiksa sebelum diproses." : "atau pilih dokumen dari perangkat kamu."}</p>
+                                
                                 <span className="dropzone-button">Pilih PDF <span aria-hidden="true">↗</span></span>
                                 <div className="dropzone-footer"><span className="file-format-chip">PDF</span><span>Maks. {formatBytes(MAX_BYTES)}</span></div>
                                 <input ref={inputRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={(event) => { const picked = event.target.files?.[0]; if (picked) pick(picked); }} />
@@ -192,7 +191,7 @@ export default function CompressPdf() {
                                             <p className="panel-eyebrow">Compression level</p>
                                             <h3 id="pdf-level-heading" className="panel-title">Pilih tingkat kompresi</h3>
                                         </div>
-                                        <span className="text-[9px] text-[#8b978e]">Pilih kartu untuk melihat pilihan</span>
+                                        
                                     </div>
                                     <div className="grid gap-3 sm:grid-cols-3">
                                         {LEVELS.map((item) => (
@@ -209,21 +208,11 @@ export default function CompressPdf() {
                                                     <span className="block text-sm font-medium">{item.label}</span>
                                                     <span className="pdf-level-indicator" aria-hidden="true">{level === item.value ? "✓" : ""}</span>
                                                 </span>
-                                                {item.value === "medium" && <span className="mt-2 inline-flex rounded-full bg-[#e8f3e9] px-2 py-1 text-[8px] font-bold text-[#48805a]">RECOMMENDED</span>}
                                                 <span className="mt-2 block text-xs text-stone-500">{item.hint}</span>
-                                                <span className="mt-1 block text-[9px] text-[#9aa49d]">{item.detail}</span>
                                             </label>
                                         ))}
                                     </div>
                                 </fieldset>
-
-                                <div className="setting-box">
-                                    <div className="setting-heading">
-                                        <span className="setting-label">Pilihan kamu</span>
-                                        <span className="setting-value !text-[12px]">{selectedLevel.label}</span>
-                                    </div>
-                                    <p className="panel-description mt-2">{selectedLevel.detail}. {selectedLevel.hint}.</p>
-                                </div>
 
                                 {status !== "done" && (
                                     <button onClick={compress} disabled={status === "loading"} aria-busy={status === "loading"} className="action-primary w-full">
@@ -234,7 +223,7 @@ export default function CompressPdf() {
                                 {status === "loading" && (
                                     <div className="processing-card" role="status" aria-live="polite">
                                         <span className="processing-orbit" />
-                                        <div className="processing-copy"><strong>PDF sedang dioptimalkan...</strong><span>Ukuran dan gambar di dalam dokumen sedang diproses. Persentase progres tidak ditampilkan karena durasi tiap file berbeda.</span></div>
+                                        <div className="processing-copy"><strong>Mengompres PDF...</strong></div>
                                     </div>
                                 )}
 
@@ -243,7 +232,7 @@ export default function CompressPdf() {
                                 {status === "done" && resultUrl && (
                                     <div className="space-y-4">
                                         <div className="workspace-success flex items-center justify-between gap-3">
-                                            <div><strong className="block text-[11px]">Kompresi selesai</strong><span className="mt-1 block text-[9px]">Hasil PDF siap disimpan atau dilihat.</span></div>
+                                            <div><strong className="block text-[11px]">Selesai</strong></div>
                                             <span className="grid h-8 w-8 place-items-center rounded-full bg-[#dceede] text-sm font-bold text-[#39734a]">✓</span>
                                         </div>
                                         <div className="workspace-panel !p-4 !shadow-none">
