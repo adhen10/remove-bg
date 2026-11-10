@@ -131,30 +131,10 @@ export default function CompressPdf() {
             <SiteHeader />
 
             <div className="workspace-main">
-                <header className="workspace-hero">
-                    <div>
-                        <span className="workspace-kicker">Document studio / PDF optimizer</span>
-                        <h1 className="workspace-title">PDF lebih ringan.<br /><span className="text-[#43815a]">Tetap siap dibagikan.</span></h1>
-                        <p className="workspace-subtitle">
-                            Optimalkan ukuran dokumen, terutama PDF hasil scan atau yang berisi banyak gambar. Pilih keseimbangan kualitas dan ukuran sesuai kebutuhan.
-                        </p>
-                    </div>
-                    <div className="workspace-hero-meta">
-                        <span className="meta-pill">
-                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            File tidak disimpan
-                        </span>
-                        <span className="meta-pill">Maks. {formatBytes(MAX_BYTES)}</span>
-                    </div>
-                </header>
-
-                <div className="workspace-stepper" aria-label="Tahapan kompresi PDF">
-                    <span className={`workflow-step ${file ? "is-complete" : "is-current"}`}><b>{file ? "✓" : "1"}</b> Pilih PDF</span>
-                    <span className="workflow-connector" />
-                    <span className={`workflow-step ${file && status !== "done" ? "is-current" : status === "done" ? "is-complete" : ""}`}><b>{status === "done" ? "✓" : "2"}</b> Atur kompresi</span>
-                    <span className="workflow-connector" />
-                    <span className={`workflow-step ${status === "done" ? "is-complete" : ""}`}><b>{status === "done" ? "✓" : "3"}</b> Unduh hasil</span>
-                </div>
+                <header className="tool-topbar">
+          <h1 className="tool-topbar-title">Kompres PDF</h1>
+          <span className="tool-topbar-meta">{status === "loading" ? "Mengompres" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
+        </header>
 
                 <div className="workspace-grid">
                     <section className="workspace-panel">
@@ -293,34 +273,11 @@ export default function CompressPdf() {
                         )}
                     </section>
 
-                    <aside className="workspace-rail">
-                        <div className="rail-card is-dark">
-                            <p className="rail-card-label">Tingkat terpilih</p>
-                            <h3 className="rail-card-title">{selectedLevel.label}</h3>
-                            <p className="rail-card-copy">{selectedLevel.detail}. {selectedLevel.hint}.</p>
-                            <div className="mt-4 border-t border-white/15 pt-3 text-[9px] font-semibold text-[#d6e8d8]">PDF · Optimasi dokumen</div>
-                        </div>
-                        <div className="rail-card">
-                            <p className="rail-card-label">Panduan pilihan</p>
-                            <ul className="rail-list">
-                                <li><i>1</i><span><b>Ringan</b> untuk dokumen yang perlu menjaga kualitas gambar.</span></li>
-                                <li><i>2</i><span><b>Seimbang</b> untuk penggunaan sehari-hari.</span></li>
-                                <li><i>3</i><span><b>Maksimal</b> saat ukuran file menjadi prioritas.</span></li>
-                            </ul>
-                        </div>
-                        <div className="rail-card">
-                            <p className="rail-card-label">Informasi file</p>
-                            <h3 className="rail-card-title">Pemrosesan lokal? Bukan.</h3>
-                            <p className="rail-card-copy">File dikirim ke layanan backend untuk dikompres selama proses berlangsung dan tidak disimpan sebagai arsip aplikasi.</p>
-                        </div>
-                    </aside>
+                    
                 </div>
             </div>
 
-            <footer className="workspace-footer">
-                <span><strong>remove-bg</strong> · Document workspace</span>
-                <span>Simple tools, cleaner workflow.</span>
-            </footer>
+            
         </main>
     );
 }
