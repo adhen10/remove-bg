@@ -25,6 +25,11 @@ class PdfCompressorTests(unittest.TestCase):
             self.assertEqual(document.page_count, 1)
             self.assertIn("PDF compression smoke test", document[0].get_text())
 
+    def test_reject_invalid_compression_level(self):
+        with self.assertRaises(HTTPException) as context:
+            compress_pdf_bytes(make_pdf(), "ultra")
+        self.assertEqual(context.exception.status_code, 400)
+
     def test_reject_invalid_pdf(self):
         with self.assertRaises(HTTPException) as context:
             compress_pdf_bytes(b"not a PDF", "medium")
