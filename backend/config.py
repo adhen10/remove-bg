@@ -30,6 +30,7 @@ ALLOWED_ORIGINS = [
 # Shared image limits for background removal and conversion.
 MAX_IMAGE_BYTES = positive_int_env("MAX_IMAGE_MB", 10) * 1024 * 1024
 MAX_IMAGE_PIXELS = positive_int_env("MAX_IMAGE_PIXELS", 25_000_000)
+MAX_SIGNATURE_PIXELS = positive_int_env("MAX_SIGNATURE_PIXELS", 8_000_000)
 MAX_IMAGE_SIDE = positive_int_env("MAX_IMAGE_SIDE", 2000)
 IMAGE_WORKERS = positive_int_env("IMAGE_WORKERS", 1)
 ALLOWED_IMAGE_FORMATS = ("JPEG", "PNG", "WEBP")
