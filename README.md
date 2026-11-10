@@ -11,7 +11,7 @@ A small utility workspace for image and PDF processing, built with Next.js and P
 ## Stack
 
 - Frontend: Next.js, React, Tailwind CSS
-- Backend: FastAPI, Pillow, rembg, ONNX Runtime
+- Backend: FastAPI, Pillow, NumPy, rembg, ONNX Runtime
 - PDF processing: PyMuPDF
 
 ## Backend structure
