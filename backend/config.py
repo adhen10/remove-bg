@@ -1,10 +1,11 @@
 import os
 import warnings
+from pathlib import Path
 
 from dotenv import load_dotenv
 from PIL import Image
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 
 def positive_int_env(name: str, default: int) -> int:
