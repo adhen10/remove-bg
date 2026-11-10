@@ -8,9 +8,8 @@ from services.image_converter import convert_image_bytes
 
 
 def make_png() -> bytes:
-    image = Image.new("RGBA", (2, 1))
-    image.putpixel((0, 0), (0, 0, 0, 0))
-    image.putpixel((1, 0), (20, 40, 60, 255))
+    image = Image.new("RGBA", (16, 8), (0, 0, 0, 0))
+    image.paste(Image.new("RGBA", (8, 8), (20, 40, 60, 255)), (8, 0))
     output = io.BytesIO()
     image.save(output, format="PNG")
     return output.getvalue()
