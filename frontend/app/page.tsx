@@ -556,7 +556,7 @@ export default function Home() {
 
         <div className="tool-footnote">
           <span>Metode: {removalMode === "ai" ? "AI" : "Signature / Document"}</span>
-          <span>Input: JPG, PNG, WEBP · Output: PNG
+          <span>Input: JPG, PNG, WEBP · Output: PNG transparan</span>
         </div>
       </section>
 
