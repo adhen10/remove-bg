@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
     { href: "/", label: "Hapus background" },
+    { href: "/image-converter", label: "Konversi gambar" },
     { href: "/compress-pdf", label: "Kompres PDF" },
 ];
 
@@ -35,7 +36,7 @@ export default function SiteHeader() {
 
             <nav
                 aria-label="Menu utama"
-                className="site-tab-list flex gap-1 rounded-full border border-black/10 bg-white p-1"
+                className="site-tab-list flex flex-wrap gap-1 rounded-full border border-black/10 bg-white p-1"
             >
                 {TABS.map((tab) => {
                     const active = pathname === tab.href;
