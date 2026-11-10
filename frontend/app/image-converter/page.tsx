@@ -211,30 +211,10 @@ export default function ImageConverter() {
             <SiteHeader />
 
             <div className="workspace-main">
-                <header className="workspace-hero">
-                    <div>
-                        <span className="workspace-kicker">Image studio / format converter</span>
-                        <h1 className="workspace-title">Satu gambar.<br /><span className="text-[#43815a]">Format yang kamu butuhkan.</span></h1>
-                        <p className="workspace-subtitle">
-                            Ubah JPG, PNG, atau WEBP ke format gambar lain. Atur kualitas dan warna latar, lalu unduh hasilnya.
-                        </p>
-                    </div>
-                    <div className="workspace-hero-meta">
-                        <span className="meta-pill">
-                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            File tidak disimpan
-                        </span>
-                        <span className="meta-pill">5 format keluaran</span>
-                    </div>
-                </header>
-
-                <div className="workspace-stepper" aria-label="Tahapan konversi gambar">
-                    <span className={`workflow-step ${file ? "is-complete" : "is-current"}`}><b>{file ? "✓" : "1"}</b> Pilih gambar</span>
-                    <span className="workflow-connector" />
-                    <span className={`workflow-step ${file && status !== "done" ? "is-current" : stepTwoComplete ? "is-complete" : ""}`}><b>{stepTwoComplete ? "✓" : "2"}</b> Atur format</span>
-                    <span className="workflow-connector" />
-                    <span className={`workflow-step ${stepTwoComplete ? "is-complete" : ""}`}><b>{stepTwoComplete ? "✓" : "3"}</b> Unduh hasil</span>
-                </div>
+                <header className="tool-topbar">
+          <h1 className="tool-topbar-title">Image converter</h1>
+          <span className="tool-topbar-meta">{status === "loading" ? "Mengonversi" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
+        </header>
 
                 <div className="workspace-grid">
                     <section className="workspace-panel">
@@ -408,36 +388,11 @@ export default function ImageConverter() {
                         )}
                     </section>
 
-                    <aside className="workspace-rail">
-                        <div className="rail-card is-dark">
-                            <p className="rail-card-label">Format terpilih</p>
-                            <h3 className="rail-card-title">{selectedFormat.label} · {selectedFormat.use}</h3>
-                            <p className="rail-card-copy">{selectedFormat.description}. {outputFormat === "png" || outputFormat === "webp" || outputFormat === "tiff" ? "Format ini dapat menyimpan transparansi." : "Format ini tidak mempertahankan transparansi."}</p>
-                            <div className="mt-4 border-t border-white/15 pt-3 text-[9px] font-semibold text-[#d6e8d8]">. {outputFormat.toUpperCase()} · Output image</div>
-                        </div>
-
-                        <div className="rail-card">
-                            <p className="rail-card-label">Alur singkat</p>
-                            <ul className="rail-list">
-                                <li><i>1</i><span>Unggah gambar sumber dalam JPG, PNG, atau WEBP.</span></li>
-                                <li><i>2</i><span>Pilih format tujuan dan sesuaikan pengaturan.</span></li>
-                                <li><i>3</i><span>Konversi lalu unduh file hasilnya.</span></li>
-                            </ul>
-                        </div>
-
-                        <div className="rail-card">
-                            <p className="rail-card-label">Catatan format</p>
-                            <h3 className="rail-card-title">Transparansi & kualitas</h3>
-                            <p className="rail-card-copy">PNG, WEBP, dan TIFF dapat mempertahankan transparansi. JPG dan BMP mengisi area transparan dengan warna latar yang kamu pilih.</p>
-                        </div>
-                    </aside>
+                    
                 </div>
             </div>
 
-            <footer className="workspace-footer">
-                <span><strong>remove-bg</strong> · Image workspace</span>
-                <span>Simple tools, cleaner workflow.</span>
-            </footer>
+            
         </main>
     );
 }
