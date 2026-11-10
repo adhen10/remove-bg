@@ -66,7 +66,7 @@ export default function Home() {
     return () => {
       requestControllerRef.current?.abort();
     };
-  }, [removalMode, sensitivity]);
+  }, []);
 
   const process = useCallback(async (picked: File) => {
     requestControllerRef.current?.abort();
@@ -154,7 +154,7 @@ export default function Home() {
         requestControllerRef.current = null;
       }
     }
-  }, []);
+  }, [removalMode, sensitivity]);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
