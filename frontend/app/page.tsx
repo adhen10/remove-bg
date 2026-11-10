@@ -227,8 +227,6 @@ export default function Home() {
     ? `${file.name.replace(/\.[^.]+$/, "")}-no-bg.png`
     : "no-bg.png";
 
-  const stepOneComplete = Boolean(file);
-  const stepTwoComplete = status === "done";
   const modeDescription =
     removalMode === "ai"
       ? "AI / U2Net cocok untuk foto produk, manusia, hewan, dan objek dengan bentuk kompleks."
@@ -248,11 +246,11 @@ export default function Home() {
           <section className="workspace-panel">
             <div className="panel-heading">
               <div>
-                <p className="panel-eyebrow">Workspace</p>
-                <h2 className="panel-title">{file ? "Gambar yang diproses" : "Pilih metode penghapusan"}</h2>
-                <p className="panel-description">{file ? "Periksa status proses dan hasil transparansi gambar." : "Pilih cara kerja yang paling sesuai dengan jenis gambar."}</p>
+                
+                <h2 className="panel-title">{file ? "Gambar" : "Metode"}</h2>
+                
               </div>
-              <span className="meta-pill">{status === "loading" ? "Sedang bekerja" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
+              <span className="meta-pill">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
             </div>
 
             {!file && (
@@ -264,7 +262,7 @@ export default function Home() {
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5.5h16v13H4z"/><path d="m4 15 4-4 3 3 3-5 6 7"/></svg>
                     </span>
                     <span className="mode-card-title">AI Background Removal</span>
-                    <span className="mode-card-copy">Untuk foto manusia, produk, hewan, dan objek kompleks.</span>
+                    
                   </button>
                   <button type="button" aria-pressed={removalMode === "signature"} onClick={() => setRemovalMode("signature")} className={`mode-card ${removalMode === "signature" ? "is-selected" : ""}`}>
                     <span className="mode-check">✓</span>
@@ -272,7 +270,7 @@ export default function Home() {
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 17c3.5 0 3.5-9 7-9 2.8 0 1.3 8 4 8 1.5 0 2.4-3 5-3"/><path d="M4 20h16"/></svg>
                     </span>
                     <span className="mode-card-title">Signature / Document</span>
-                    <span className="mode-card-copy">Untuk tanda tangan, tulisan tangan, dan dokumen berlatar putih.</span>
+                    
                   </button>
                 </div>
 
@@ -289,7 +287,7 @@ export default function Home() {
                         <button key={preset.value} type="button" onClick={() => setSensitivity(preset.value)} className={`preset-chip ${sensitivity === preset.value ? "is-active" : ""}`}>{preset.label}</button>
                       ))}
                     </div>
-                    <p className="panel-description mt-3">Nilai tinggi menghapus noda terang lebih kuat, tetapi bisa mengurangi goresan pena yang sangat tipis.</p>
+                    
                   </div>
                 )}
               </>
@@ -309,7 +307,7 @@ export default function Home() {
               >
                 <span className="dropzone-icon"><UploadIcon /></span>
                 <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk mulai" : "Tarik gambar ke area ini"}</h3>
-                <p className="dropzone-copy">{dragging ? "File akan diperiksa lalu diproses otomatis." : "atau pilih dari perangkat kamu. Bisa juga paste dengan Ctrl + V."}</p>
+                
                 <span className="dropzone-button">Pilih gambar <span aria-hidden="true">↗</span></span>
                 <div className="dropzone-footer">
                   <span className="file-format-chip">JPG</span>
@@ -341,7 +339,7 @@ export default function Home() {
                     <span className="processing-orbit" />
                     <div className="processing-copy">
                       <strong>{removalMode === "ai" ? "AI sedang memisahkan objek..." : "Membersihkan background kertas..."}</strong>
-                      <span>{removalMode === "ai" ? "Model sedang mengenali batas objek dan latar." : "Menghitung warna kertas dan menjaga tepi goresan."}</span>
+                      
                     </div>
                   </div>
                 )}
@@ -353,7 +351,7 @@ export default function Home() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="panel-eyebrow">Hasil pemrosesan</p>
-                        <h3 className="panel-title">Background berhasil dibersihkan</h3>
+                        <h3 className="panel-title">Hasil PNG</h3>
                       </div>
                       <span className="meta-pill"><i className="h-2 w-2 rounded-full bg-[#5c9b6e]" /> PNG transparan</span>
                     </div>
