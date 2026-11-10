@@ -239,33 +239,10 @@ export default function Home() {
       <SiteHeader />
 
       <div className="workspace-main">
-        <header className="workspace-hero">
-          <div>
-            <span className="workspace-kicker">Image studio / background remover</span>
-            <h1 className="workspace-title">Bersihkan background.<br /><span className="text-[#43815a]">Fokus pada objeknya.</span></h1>
-            <p className="workspace-subtitle">
-              Hapus latar gambar dengan AI atau bersihkan kertas terang untuk tanda tangan. Hasil akhir siap diunduh sebagai PNG transparan.
-            </p>
-          </div>
-          <div className="workspace-hero-meta">
-            <span className="meta-pill">
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              File tidak disimpan
-            </span>
-            <span className="meta-pill">
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3h10v10H3zM3 8h10M8 3v10" stroke="currentColor" strokeWidth="1.1"/></svg>
-              Output PNG
-            </span>
-          </div>
+        <header className="tool-topbar">
+          <h1 className="tool-topbar-title">Hapus background</h1>
+          <span className="tool-topbar-meta">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
         </header>
-
-        <div className="workspace-stepper" aria-label="Tahapan penghapusan background">
-          <span className="workflow-step is-current"><b>1</b> Metode & unggah</span>
-          <span className="workflow-connector" />
-          <span className={`workflow-step ${stepOneComplete ? "is-complete" : ""}`}><b>{stepOneComplete ? "✓" : "2"}</b> Pemrosesan</span>
-          <span className="workflow-connector" />
-          <span className={`workflow-step ${stepTwoComplete ? "is-complete" : ""}`}><b>{stepTwoComplete ? "✓" : "3"}</b> Unduh hasil</span>
-        </div>
 
         <div className="workspace-grid">
           <section className="workspace-panel">
@@ -457,39 +434,11 @@ export default function Home() {
             )}
           </section>
 
-          <aside className="workspace-rail">
-            <div className="rail-card is-dark">
-              <p className="rail-card-label">Mode terpilih</p>
-              <h3 className="rail-card-title">{removalMode === "ai" ? "AI Background Removal" : "Signature / Document"}</h3>
-              <p className="rail-card-copy">{modeDescription}</p>
-              <div className="mt-4 flex items-center gap-2 border-t border-white/15 pt-3 text-[9px] font-semibold text-[#d6e8d8]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#9bd0a1]" />
-                {removalMode === "ai" ? "Powered by U2Net" : `Sensitivity ${sensitivity} / 100`}
-              </div>
-            </div>
-
-            <div className="rail-card">
-              <p className="rail-card-label">Cara menggunakan</p>
-              <ul className="rail-list">
-                <li><i>1</i><span>Pilih metode sesuai jenis gambar.</span></li>
-                <li><i>2</i><span>Unggah JPG, PNG, atau WEBP maksimal 10 MB.</span></li>
-                <li><i>3</i><span>Bandingkan hasil lalu unduh PNG transparan.</span></li>
-              </ul>
-            </div>
-
-            <div className="rail-card">
-              <p className="rail-card-label">Tips hasil terbaik</p>
-              <h3 className="rail-card-title">{removalMode === "ai" ? "Gunakan gambar yang jelas" : "Gunakan kertas terang"}</h3>
-              <p className="rail-card-copy">{removalMode === "ai" ? "Objek dengan pencahayaan baik dan kontras jelas biasanya lebih mudah dipisahkan." : "Mode ini bekerja paling baik pada tulisan atau tanda tangan di atas latar putih yang merata."}</p>
-            </div>
-          </aside>
+          
         </div>
       </div>
 
-      <footer className="workspace-footer">
-        <span><strong>remove-bg</strong> · Image workspace</span>
-        <span>Simple tools, cleaner workflow.</span>
-      </footer>
+      
     </main>
   );
 }
