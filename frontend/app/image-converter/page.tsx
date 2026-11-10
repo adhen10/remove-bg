@@ -201,10 +201,8 @@ export default function ImageConverter() {
             ? checkerboard
             : { backgroundColor: previewSurface === "light" ? "#f1f2ef" : "#252d28" };
 
-    const selectedFormat = FORMATS.find((format) => format.value === outputFormat)!;
     const hasQuality = outputFormat === "jpg" || outputFormat === "webp";
     const hasBackground = outputFormat === "jpg" || outputFormat === "bmp";
-    const stepTwoComplete = status === "done";
 
     return (
         <main className="workspace-shell">
@@ -220,11 +218,11 @@ export default function ImageConverter() {
                     <section className="workspace-panel">
                         <div className="panel-heading">
                             <div>
-                                <p className="panel-eyebrow">Workspace</p>
-                                <h2 className="panel-title">{file ? "Pengaturan konversi" : "Pilih gambar sumber"}</h2>
-                                <p className="panel-description">{file ? "Pilih format tujuan dan sesuaikan kualitas jika tersedia." : "Mulai dengan mengunggah satu gambar dari perangkat."}</p>
+                                
+                                <h2 className="panel-title">{file ? "Pengaturan" : "Gambar sumber"}</h2>
+                                
                             </div>
-                            <span className="meta-pill">{status === "loading" ? "Mengonversi" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
+                            <span className="meta-pill">{status === "loading" ? "Mengonversi" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
                         </div>
 
                         {!file && (
@@ -243,7 +241,7 @@ export default function ImageConverter() {
                                     <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 25V7m0 0-6 6m6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 23v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
                                 </span>
                                 <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk memilih file" : "Tarik gambar ke area ini"}</h3>
-                                <p className="dropzone-copy">{dragging ? "File akan diperiksa sebelum diproses." : "atau pilih gambar dari perangkat kamu."}</p>
+                                
                                 <span className="dropzone-button">Pilih gambar <span aria-hidden="true">↗</span></span>
                                 <div className="dropzone-footer">
                                     {["JPG", "JPEG", "PNG", "WEBP"].map((format) => <span key={format} className="file-format-chip">{format}</span>)}
@@ -274,7 +272,7 @@ export default function ImageConverter() {
                                             <p className="panel-eyebrow">Output format</p>
                                             <h3 className="panel-title">Pilih format tujuan</h3>
                                         </div>
-                                        <span className="text-[9px] text-[#8b978e]">Klik kartu untuk memilih</span>
+                                        
                                     </div>
                                     <div className="format-grid">
                                         {FORMATS.map((format) => (
@@ -287,8 +285,8 @@ export default function ImageConverter() {
                                             }} aria-pressed={outputFormat === format.value} className={`format-card ${outputFormat === format.value ? "is-selected" : ""}`}>
                                                 {outputFormat === format.value && <span className="format-card-check">✓</span>}
                                                 <span className="format-card-code">{format.label}</span>
-                                                <span className="format-card-name">{format.use}</span>
-                                                <span className="format-card-desc">{format.description}</span>
+                                                
+                                                
                                             </button>
                                         ))}
                                     </div>
@@ -313,7 +311,7 @@ export default function ImageConverter() {
                                         <div className="setting-heading">
                                             <div>
                                                 <p className="setting-label">Warna pengganti transparansi</p>
-                                                <p className="panel-description">Area transparan pada format {outputFormat.toUpperCase()} akan diisi warna ini.</p>
+                                                
                                             </div>
                                             <label className="flex items-center gap-2 rounded-lg border border-[#e2eae2] bg-white px-2 py-1.5 text-[9px] font-bold text-[#617267]">
                                                 {backgroundColor.toUpperCase()}
@@ -335,7 +333,7 @@ export default function ImageConverter() {
                                 {status === "loading" && (
                                     <div className="processing-card" role="status" aria-live="polite">
                                         <span className="processing-orbit" />
-                                        <div className="processing-copy"><strong>Mengonversi ke {outputFormat.toUpperCase()}...</strong><span>Menjaga dimensi gambar dan menerapkan pengaturan yang dipilih.</span></div>
+                                        <div className="processing-copy"><strong>Mengonversi ke {outputFormat.toUpperCase()}...</strong></div>
                                     </div>
                                 )}
 
@@ -344,7 +342,7 @@ export default function ImageConverter() {
                                 {status === "done" && resultUrl && (
                                     <div className="space-y-4">
                                         <div className="workspace-success flex items-center justify-between gap-3">
-                                            <div><strong className="block text-[11px]">Konversi selesai</strong><span className="mt-1 block text-[9px]">File sudah siap untuk diunduh.</span></div>
+                                            <div><strong className="block text-[11px]">Selesai</strong></div>
                                             <span className="grid h-8 w-8 place-items-center rounded-full bg-[#dceede] text-sm font-bold text-[#39734a]">✓</span>
                                         </div>
 
@@ -361,14 +359,14 @@ export default function ImageConverter() {
                                                 {outputFormat === "tiff" ? (
                                                     <div className="max-w-xs px-5 text-center">
                                                         <div className="text-xl font-extrabold tracking-wide text-[#496550]">TIFF</div>
-                                                        <p className="mt-2 text-[10px] leading-relaxed text-[#839087]">Preview TIFF belum didukung sebagian besar browser. Unduh file untuk membukanya di aplikasi gambar.</p>
+                                                        <p className="mt-2 text-[10px] text-[#839087]">Preview tidak tersedia</p>
                                                     </div>
                                                 ) : (
                                                     // eslint-disable-next-line @next/next/no-img-element
                                                     <img src={resultUrl} alt={`Hasil gambar ${outputFormat.toUpperCase()}`} />
                                                 )}
                                             </div>
-                                            <div className="mt-3 flex justify-between gap-3 text-[9px] text-[#87948a]"><span>Dimensi {dimensions ? `${dimensions.width} × ${dimensions.height} px` : "—"}</span><span>{selectedFormat.description}</span></div>
+                                            <div className="mt-3 flex justify-between gap-3 text-[9px] text-[#87948a]"><span>Dimensi {dimensions ? `${dimensions.width} × ${dimensions.height} px` : "—"}</span></div>
                                         </div>
 
                                         <div className="stat-grid">
