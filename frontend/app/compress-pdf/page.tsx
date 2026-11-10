@@ -205,11 +205,12 @@ export default function CompressPdf() {
                                     <button type="button" onClick={reset} disabled={status === "loading"} className="file-summary-action">Ganti file</button>
                                 </div>
 
-                                <fieldset disabled={status === "loading"}>
+                                <fieldset disabled={status === "loading"} aria-labelledby="pdf-level-heading">
+                                    <legend className="sr-only">Pilih tingkat kompresi</legend>
                                     <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
                                         <div>
                                             <p className="panel-eyebrow">Compression level</p>
-                                            <legend className="panel-title">Pilih tingkat kompresi</legend>
+                                            <h3 id="pdf-level-heading" className="panel-title">Pilih tingkat kompresi</h3>
                                         </div>
                                         <span className="text-[9px] text-[#8b978e]">Pilih kartu untuk melihat pilihan</span>
                                     </div>
