@@ -21,6 +21,8 @@ const MIME_BY_FORMAT: Record<OutputFormat, string> = {
     png: "image/png",
     jpg: "image/jpeg",
     webp: "image/webp",
+    bmp: "image/bmp",
+    tiff: "image/tiff",
 };
 
 function formatBytes(bytes: number) {
@@ -228,7 +230,7 @@ export default function ImageConverter() {
                             Pilih gambar
                         </button>
                         <p className="mt-6 text-xs font-medium text-stone-500">
-                            JPG · JPEG · PNG · WEBP &nbsp;•&nbsp; Maks. 10 MB
+                            Input: JPG · JPEG · PNG · WEBP &nbsp;•&nbsp; Maks. 10 MB
                         </p>
                         <input
                             ref={inputRef}
@@ -315,10 +317,10 @@ export default function ImageConverter() {
                             </div>
                         )}
 
-                        {outputFormat === "jpg" && (
+                        {(outputFormat === "jpg" || outputFormat === "bmp") && (
                             <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5">
                                 <div>
-                                    <p className="text-sm font-medium text-stone-700">Warna latar JPG</p>
+                                    <p className="text-sm font-medium text-stone-700">Warna latar {outputFormat.toUpperCase()}</p>
                                     <p className="mt-1 text-xs text-stone-500">
                                         Area transparan akan diisi warna ini.
                                     </p>
