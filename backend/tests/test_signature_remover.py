@@ -2,7 +2,6 @@ import io
 import unittest
 
 from fastapi import HTTPException
-import numpy as np
 from PIL import Image, ImageDraw
 
 from services.signature_remover import remove_light_background
@@ -13,7 +12,7 @@ def make_signature_image() -> bytes:
     draw = ImageDraw.Draw(image)
     draw.line([(18, 58), (35, 34), (52, 62), (76, 25), (95, 65), (135, 40)], fill=(18, 18, 18), width=5)
     # Simulate faint JPEG/background variation close to the paper color.
-    draw.point((4, 4), fill=(245, 245, 245))
+    draw.point((4, 4), fill=(240, 240, 240))
     output = io.BytesIO()
     image.save(output, format="PNG")
     return output.getvalue()
