@@ -10,6 +10,12 @@ logger = logging.getLogger(__name__)
 
 def compress_pdf_bytes(data: bytes, level: str) -> bytes:
     """Validate and compress a PDF payload."""
+    if level not in PDF_LEVELS:
+        raise HTTPException(
+            status_code=400,
+            detail="Level harus low, medium, atau high.",
+        )
+
     if not data.startswith(b"%PDF-"):
         raise HTTPException(status_code=400, detail="File bukan PDF yang valid.")
 
