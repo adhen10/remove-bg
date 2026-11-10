@@ -8,6 +8,7 @@ from fastapi.responses import Response
 from config import IMAGE_WORKERS, MAX_IMAGE_BYTES
 from services.background_remover import remove_background
 from services.image_converter import convert_image_bytes
+from services.signature_remover import remove_light_background
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Images"])
@@ -34,7 +35,19 @@ def _busy_response() -> HTTPException:
 
 
 @router.post("/remove-bg")
-async def remove_bg(file: UploadFile = File(...)):
+async def remove_bg(
+    file: UploadFile = File(...),
+    mode: str = Form("ai"),
+    sensitivity: int = Form(18),
+):
+    mode = mode.strip().lower()
+    if mode not in {"ai", "signature"}:
+        await file.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Mode harus ai atau signature.",
+        )
+
     if not _image_slots.acquire(blocking=False):
         await file.close()
         raise _busy_response()
@@ -42,11 +55,18 @@ async def remove_bg(file: UploadFile = File(...)):
     try:
         data = await _read_image_upload(file)
         try:
-            output = await run_in_threadpool(remove_background, data)
+            if mode == "signature":
+                output = await run_in_threadpool(
+                    remove_light_background,
+                    data,
+                    sensitivity,
+                )
+            else:
+                output = await run_in_threadpool(remove_background, data)
         except HTTPException:
             raise
         except Exception as exc:
-            logger.exception("Background removal failed.")
+            logger.exception("Background removal failed (mode=%s).", mode)
             raise HTTPException(
                 status_code=500,
                 detail="Gagal memproses gambar. Silakan coba lagi.",
