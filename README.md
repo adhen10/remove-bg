@@ -32,7 +32,9 @@ backend/
 ├── utils/
 │   └── image_validation.py   # Shared image decoding and validation
 └── tests/
-    └── test_image_converter.py
+    ├── __init__.py
+    ├── test_image_converter.py
+    └── test_pdf_compressor.py
 ```
 
 - **Routers** handle HTTP requests, upload limits, concurrency, and responses.
@@ -115,7 +117,7 @@ Restart the backend and restart/rebuild the Next.js frontend after changing thes
 |---|---|---|
 | GET | `/health` | Backend health check |
 | POST | `/remove-bg` | Accepts an image in multipart field `file`; returns transparent PNG |
-| POST | `/convert-image` | Converts an image to PNG, JPG, or WEBP |
+| POST | `/convert-image` | Converts an image to PNG, JPG, WEBP, BMP, or TIFF |
 | POST | `/compress-pdf` | Accepts multipart fields `file` and `level`; returns PDF |
 
 ### Image conversion
@@ -148,7 +150,7 @@ Backend checks from the repository root (activate the backend virtual environmen
 
 ```bash
 python -m compileall -q backend
-PYTHONPATH=backend python -m unittest discover -s backend/tests -v
+python -m unittest discover -s backend/tests -t backend -v
 ```
 
 ## Deployment notes
