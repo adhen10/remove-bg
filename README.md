@@ -1,10 +1,11 @@
 # remove-bg
 
-A small image utility app built with Next.js and Python.
+A small utility workspace for image and PDF processing, built with Next.js and Python.
 
-Current tools:
+## Available tools
 
 - **Remove background** — remove image backgrounds and return transparent PNG files.
+- **Image converter** — convert PNG, JPG/JPEG, and WEBP images between supported formats.
 - **Compress PDF** — recompress embedded images and optimize PDF structure.
 
 ## Stack
@@ -12,6 +13,31 @@ Current tools:
 - Frontend: Next.js, React, Tailwind CSS
 - Backend: FastAPI, Pillow, rembg, ONNX Runtime
 - PDF processing: PyMuPDF
+
+## Backend structure
+
+The backend is separated by responsibility so new tools can be added without putting all processing logic in `main.py`.
+
+```text
+backend/
+├── main.py                    # FastAPI app, CORS, router registration
+├── config.py                  # Environment variables and shared limits
+├── routers/
+│   ├── image.py               # Image upload endpoints
+│   └── pdf.py                 # PDF upload endpoints
+├── services/
+│   ├── background_remover.py  # Background removal processing
+│   └── image_converter.py    # PNG / JPG / WEBP conversion
+├── utils/
+│   └── image_validation.py   # Shared image decoding and validation
+└── tests/
+    └── test_image_converter.py
+```
+
+- **Routers** handle HTTP requests, upload limits, concurrency, and responses.
+- **Services** contain reusable file-processing logic.
+- **Utils** contain shared validation and helper functions.
+- **Config** centralizes environment settings.
 
 ## Requirements
 
@@ -36,7 +62,7 @@ Copy-Item .env.example .env
 uvicorn main:app --reload --port 8000
 ```
 
-The API is available at `http://localhost:8000`. Health check: `http://localhost:8000/health`.
+The API is available at `http://localhost:8000`. Health check: `http://localhost:8000/health`. Interactive API documentation: `http://localhost:8000/docs`.
 
 ### 2. Frontend
 
@@ -58,10 +84,10 @@ Open `http://localhost:3000`.
 | Variable | Default | Description |
 |---|---:|---|
 | `ALLOWED_ORIGINS` | `http://localhost:3000` | Comma-separated frontend origins |
-| `MAX_IMAGE_MB` | `10` | Maximum uploaded image size in MB |
+| `MAX_IMAGE_MB` | `10` | Maximum uploaded image size in MB, shared by image tools |
 | `MAX_IMAGE_PIXELS` | `25000000` | Maximum decoded image pixels |
-| `MAX_IMAGE_SIDE` | `2000` | Maximum image side after resizing |
-| `IMAGE_WORKERS` | `1` | Concurrent background-removal jobs |
+| `MAX_IMAGE_SIDE` | `2000` | Maximum image side after resizing for background removal |
+| `IMAGE_WORKERS` | `1` | Concurrent image-processing jobs |
 | `MAX_PDF_MB` | `200` | Maximum uploaded PDF size in MB (configurable) |
 | `MAX_PDF_PAGES` | `500` | Maximum PDF page count |
 | `PDF_WORKERS` | `1` | Concurrent PDF compression jobs; increase only if the host has enough RAM |
@@ -87,8 +113,22 @@ Restart the backend and restart/rebuild the Next.js frontend after changing thes
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/health` | Backend health check |
-| POST | `/remove-bg` | Accepts an image in multipart field `file`; returns PNG |
+| POST | `/remove-bg` | Accepts an image in multipart field `file`; returns transparent PNG |
+| POST | `/convert-image` | Converts an image to PNG, JPG, or WEBP |
 | POST | `/compress-pdf` | Accepts multipart fields `file` and `level`; returns PDF |
+
+### Image conversion
+
+The `POST /convert-image` endpoint accepts these multipart fields:
+
+| Field | Required | Values / default |
+|---|---|---|
+| `file` | Yes | JPG/JPEG, PNG, or static WEBP; maximum 10 MB by default |
+| `output_format` | Yes | `png`, `jpg`, or `webp` |
+| `quality` | No | Integer 1–100; default `90`. Used by JPG and WEBP |
+| `background_color` | No | HEX color; default `#ffffff`. Used when flattening transparent pixels to JPG |
+
+PNG preserves transparency. JPG does not support transparency, so transparent areas are filled with the selected background color. WEBP supports transparency. Conversion keeps the original image dimensions; decoded image size is bounded by `MAX_IMAGE_PIXELS`.
 
 Supported background-removal input formats: JPG/JPEG, PNG, and static WEBP. Images are resized to the configured maximum side before AI processing.
 
@@ -103,10 +143,11 @@ npm run lint
 npm run build
 ```
 
-Backend syntax check from the repository root:
+Backend checks from the repository root (activate the backend virtual environment first):
 
 ```bash
 python -m compileall -q backend
+PYTHONPATH=backend python -m unittest discover -s backend/tests -v
 ```
 
 ## Deployment notes
