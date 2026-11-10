@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "remove.bg — Hapus Background Foto dengan AI",
+  title: "remove-bg — Image & PDF Tools",
   description:
-    "Hapus background gambar secara otomatis dan download hasilnya sebagai PNG transparan. Cepat, mudah, dan tanpa perlu daftar.",
+    "Alat sederhana untuk menghapus background, mengonversi format gambar, dan mengompres PDF.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
