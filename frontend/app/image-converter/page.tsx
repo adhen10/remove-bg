@@ -12,6 +12,8 @@ const FORMATS = [
     { value: "png", label: "PNG", description: "Mendukung transparansi" },
     { value: "jpg", label: "JPG", description: "Ukuran file lebih kecil" },
     { value: "webp", label: "WEBP", description: "Format modern untuk web" },
+    { value: "bmp", label: "BMP", description: "Format bitmap" },
+    { value: "tiff", label: "TIFF", description: "Untuk kebutuhan cetak dan arsip" },
 ] as const;
 
 type OutputFormat = (typeof FORMATS)[number]["value"];
@@ -332,7 +334,7 @@ export default function ImageConverter() {
                                         disabled={status === "loading"}
                                         value={backgroundColor}
                                         onChange={(event) => setBackgroundColor(event.target.value)}
-                                        aria-label="Pilih warna latar JPG"
+                                        aria-label={`Pilih warna latar ${outputFormat.toUpperCase()}`}
                                         className="h-9 w-12 cursor-pointer rounded border border-stone-200 bg-white p-1"
                                     />
                                 </label>
