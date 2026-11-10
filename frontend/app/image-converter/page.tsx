@@ -401,8 +401,17 @@ export default function ImageConverter() {
                                     <figure className="min-w-0">
                                         <figcaption className="mb-2 text-xs font-medium text-stone-500">Hasil konversi</figcaption>
                                         <div className="flex h-64 items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={resultUrl} alt={`Hasil gambar ${outputFormat.toUpperCase()}`} className="max-h-full max-w-full object-contain" />
+                                            {outputFormat === "tiff" ? (
+                                                <div className="max-w-xs text-center">
+                                                    <div className="text-lg font-semibold tracking-wide text-stone-700">TIFF</div>
+                                                    <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                                                        Preview TIFF belum didukung sebagian besar browser. Unduh file untuk membukanya di aplikasi gambar.
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={resultUrl} alt={`Hasil gambar ${outputFormat.toUpperCase()}`} className="max-h-full max-w-full object-contain" />
+                                            )}
                                         </div>
                                     </figure>
                                 </div>
