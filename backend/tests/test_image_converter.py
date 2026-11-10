@@ -55,6 +55,23 @@ class ImageConverterTests(unittest.TestCase):
         self.assertEqual(media_type, "image/webp")
         self.assertEqual(extension, "webp")
 
+    def test_convert_to_bmp(self):
+        result, media_type, extension = convert_image_bytes(self.source, "bmp")
+        with Image.open(io.BytesIO(result)) as converted:
+            self.assertEqual(converted.format, "BMP")
+            self.assertEqual(converted.mode, "RGB")
+        self.assertEqual(media_type, "image/bmp")
+        self.assertEqual(extension, "bmp")
+
+    def test_convert_to_tiff_preserves_transparency(self):
+        result, media_type, extension = convert_image_bytes(self.source, "tiff")
+        with Image.open(io.BytesIO(result)) as converted:
+            self.assertEqual(converted.format, "TIFF")
+            self.assertEqual(converted.mode, "RGBA")
+            self.assertEqual(converted.getpixel((0, 0))[3], 0)
+        self.assertEqual(media_type, "image/tiff")
+        self.assertEqual(extension, "tiff")
+
     def test_reject_unsupported_output_format(self):
         with self.assertRaises(HTTPException) as context:
             convert_image_bytes(self.source, "gif")
