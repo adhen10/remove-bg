@@ -9,15 +9,16 @@ const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
 
 const FORMATS = [
-    { value: "png", label: "PNG", description: "Mendukung transparansi" },
-    { value: "jpg", label: "JPG", description: "Ukuran file lebih kecil" },
-    { value: "webp", label: "WEBP", description: "Format modern untuk web" },
-    { value: "bmp", label: "BMP", description: "Format bitmap" },
-    { value: "tiff", label: "TIFF", description: "Untuk kebutuhan cetak dan arsip" },
+    { value: "png", label: "PNG", description: "Transparansi terjaga", use: "Grafis & logo" },
+    { value: "jpg", label: "JPG", description: "File lebih ringkas", use: "Foto & berbagi" },
+    { value: "webp", label: "WEBP", description: "Ringan untuk web", use: "Website" },
+    { value: "bmp", label: "BMP", description: "Bitmap tanpa kompresi", use: "Kompatibilitas" },
+    { value: "tiff", label: "TIFF", description: "Untuk cetak & arsip", use: "Dokumen" },
 ] as const;
 
 type OutputFormat = (typeof FORMATS)[number]["value"];
 type Status = "idle" | "ready" | "loading" | "done" | "error";
+type PreviewSurface = "checker" | "light" | "dark";
 
 const MIME_BY_FORMAT: Record<OutputFormat, string> = {
     png: "image/png",
@@ -26,6 +27,14 @@ const MIME_BY_FORMAT: Record<OutputFormat, string> = {
     bmp: "image/bmp",
     tiff: "image/tiff",
 };
+
+const checkerboard = {
+    backgroundColor: "#ffffff",
+    backgroundImage:
+        "linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)",
+    backgroundSize: "20px 20px",
+    backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0",
+} as const;
 
 function formatBytes(bytes: number) {
     if (bytes < 1024) return `${bytes} B`;
@@ -49,6 +58,7 @@ export default function ImageConverter() {
     const [error, setError] = useState<string | null>(null);
     const [dragging, setDragging] = useState(false);
     const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+    const [previewSurface, setPreviewSurface] = useState<PreviewSurface>("checker");
     const inputRef = useRef<HTMLInputElement>(null);
     const requestControllerRef = useRef<AbortController | null>(null);
 
@@ -101,6 +111,7 @@ export default function ImageConverter() {
         setResultUrl(null);
         setResultSize(0);
         setDimensions(null);
+        setPreviewSurface("checker");
         setError(null);
         setStatus("ready");
     };
@@ -170,6 +181,7 @@ export default function ImageConverter() {
         setOutputFormat("png");
         setQuality(90);
         setBackgroundColor("#ffffff");
+        setPreviewSurface("checker");
         if (inputRef.current) inputRef.current.value = "";
     };
 
@@ -184,283 +196,248 @@ export default function ImageConverter() {
         if (dropped) pickFile(dropped);
     };
 
+    const activePreviewStyle =
+        previewSurface === "checker"
+            ? checkerboard
+            : { backgroundColor: previewSurface === "light" ? "#f1f2ef" : "#252d28" };
+
+    const selectedFormat = FORMATS.find((format) => format.value === outputFormat)!;
+    const hasQuality = outputFormat === "jpg" || outputFormat === "webp";
+    const hasBackground = outputFormat === "jpg" || outputFormat === "bmp";
+    const stepTwoComplete = status === "done";
+
     return (
-        <div className="flex min-h-screen flex-col text-stone-900">
+        <main className="workspace-shell">
             <SiteHeader />
 
-            <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
-                <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+            <div className="workspace-main">
+                <header className="workspace-hero">
                     <div>
-                        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                            Konversi gambar
-                        </h1>
-                        <p className="mt-2 text-sm text-stone-500">
-                            Ubah gambar ke PNG, JPG, atau WEBP sesuai kebutuhan.
+                        <span className="workspace-kicker">Image studio / format converter</span>
+                        <h1 className="workspace-title">Satu gambar.<br /><span className="text-[#43815a]">Format yang kamu butuhkan.</span></h1>
+                        <p className="workspace-subtitle">
+                            Ubah JPG, PNG, atau WEBP ke format gambar lain. Atur kualitas dan warna latar, lalu unduh hasilnya.
                         </p>
                     </div>
-                    <span className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-500">
-                        File tidak disimpan
-                    </span>
+                    <div className="workspace-hero-meta">
+                        <span className="meta-pill">
+                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8 13 4v3.5c0 3.1-2 5.5-5 6.7-3-1.2-5-3.6-5-6.7V4l5-2.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/><path d="m5.8 7.8 1.5 1.5 3-3.1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            File tidak disimpan
+                        </span>
+                        <span className="meta-pill">5 format keluaran</span>
+                    </div>
                 </header>
 
-                {!file && (
-                    <div
-                        onDragOver={(event) => {
-                            event.preventDefault();
-                            setDragging(true);
-                        }}
-                        onDragLeave={() => setDragging(false)}
-                        onDrop={onDrop}
-                        className={`flex flex-col items-center rounded-3xl border border-dashed px-6 py-14 text-center transition-colors ${dragging ? "border-[#46745a] bg-[#eaf1ec]" : "border-stone-300 bg-white"}`}
-                    >
-                        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf1ec] text-[#46745a]">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />
-                            </svg>
-                        </span>
-                        <p className="mt-6 text-lg font-semibold">
-                            {dragging ? "Lepaskan gambar untuk memilih file" : "Tarik gambar ke sini"}
-                        </p>
-                        <p className="mt-1 text-sm text-stone-500">
-                            atau pilih gambar dari perangkat kamu
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => inputRef.current?.click()}
-                            className="mt-6 rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2"
-                        >
-                            Pilih gambar
-                        </button>
-                        <p className="mt-6 text-xs font-medium text-stone-500">
-                            Input: JPG · JPEG · PNG · WEBP &nbsp;•&nbsp; Maks. 10 MB
-                        </p>
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-                            className="hidden"
-                            onChange={(event) => {
-                                const picked = event.target.files?.[0];
-                                if (picked) pickFile(picked);
-                            }}
-                        />
-                    </div>
-                )}
+                <div className="workspace-stepper" aria-label="Tahapan konversi gambar">
+                    <span className={`workflow-step ${file ? "is-complete" : "is-current"}`}><b>{file ? "✓" : "1"}</b> Pilih gambar</span>
+                    <span className="workflow-connector" />
+                    <span className={`workflow-step ${file && status !== "done" ? "is-current" : stepTwoComplete ? "is-complete" : ""}`}><b>{stepTwoComplete ? "✓" : "2"}</b> Atur format</span>
+                    <span className="workflow-connector" />
+                    <span className={`workflow-step ${stepTwoComplete ? "is-complete" : ""}`}><b>{stepTwoComplete ? "✓" : "3"}</b> Unduh hasil</span>
+                </div>
 
-                {status === "error" && !file && (
-                    <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-                        {error}
-                    </p>
-                )}
-
-                {file && (
-                    <section className="space-y-6">
-                        <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white px-5 py-4">
-                            <div className="min-w-0">
-                                <p className="truncate font-medium">{file.name}</p>
-                                <p className="text-sm text-stone-500">{formatBytes(file.size)}</p>
+                <div className="workspace-grid">
+                    <section className="workspace-panel">
+                        <div className="panel-heading">
+                            <div>
+                                <p className="panel-eyebrow">Workspace</p>
+                                <h2 className="panel-title">{file ? "Pengaturan konversi" : "Pilih gambar sumber"}</h2>
+                                <p className="panel-description">{file ? "Pilih format tujuan dan sesuaikan kualitas jika tersedia." : "Mulai dengan mengunggah satu gambar dari perangkat."}</p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={reset}
-                                className="shrink-0 text-sm text-stone-500 hover:text-stone-900"
-                            >
-                                Ganti file
-                            </button>
+                            <span className="meta-pill">{status === "loading" ? "Mengonversi" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
                         </div>
 
-                        <div>
-                            <p className="mb-3 text-sm font-medium text-stone-700">Format keluaran</p>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {FORMATS.map((format) => (
-                                    <button
-                                        key={format.value}
-                                        type="button"
-                                        disabled={status === "loading"}
-                                        onClick={() => {
-                                            setOutputFormat(format.value);
-                                            setResultUrl(null);
-                                            setResultSize(0);
-                                            if (status === "done" || status === "error") setStatus("ready");
-                                            setError(null);
-                                        }}
-                                        aria-pressed={outputFormat === format.value}
-                                        className={`rounded-xl border p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] ${outputFormat === format.value ? "border-[#6c9877] bg-[#f2f7f1] ring-1 ring-[#6c9877]" : "border-stone-200 bg-white hover:border-stone-300"}`}
-                                    >
-                                        <span className="block text-sm font-semibold">{format.label}</span>
-                                        <span className="mt-1 block text-xs text-stone-500">{format.description}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {(outputFormat === "jpg" || outputFormat === "webp") && (
-                            <div className="rounded-2xl border border-stone-200 bg-white p-5">
-                                <div className="flex items-center justify-between gap-4">
-                                    <label htmlFor="image-quality" className="text-sm font-medium text-stone-700">
-                                        Kualitas
-                                    </label>
-                                    <span className="text-sm font-semibold tabular-nums text-stone-700">{quality}%</span>
-                                </div>
-                                <input
-                                    id="image-quality"
-                                    type="range"
-                                    disabled={status === "loading"}
-                                    min="1"
-                                    max="100"
-                                    value={quality}
-                                    onChange={(event) => setQuality(Number(event.target.value))}
-                                    className="mt-4 w-full accent-[#46745a]"
-                                />
-                                <div className="mt-1 flex justify-between text-xs text-stone-400">
-                                    <span>Ukuran lebih kecil</span>
-                                    <span>Kualitas lebih tinggi</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {(outputFormat === "jpg" || outputFormat === "bmp") && (
-                            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-5">
-                                <div>
-                                    <p className="text-sm font-medium text-stone-700">Warna latar {outputFormat.toUpperCase()}</p>
-                                    <p className="mt-1 text-xs text-stone-500">
-                                        Area transparan akan diisi warna ini.
-                                    </p>
-                                </div>
-                                <label className="flex items-center gap-3 text-sm text-stone-600">
-                                    <span>{backgroundColor.toUpperCase()}</span>
-                                    <input
-                                        type="color"
-                                        disabled={status === "loading"}
-                                        value={backgroundColor}
-                                        onChange={(event) => setBackgroundColor(event.target.value)}
-                                        aria-label={`Pilih warna latar ${outputFormat.toUpperCase()}`}
-                                        className="h-9 w-12 cursor-pointer rounded border border-stone-200 bg-white p-1"
-                                    />
-                                </label>
-                            </div>
-                        )}
-
-                        {status !== "done" && (
-                            <button
-                                type="button"
-                                onClick={convert}
-                                disabled={status === "loading"}
-                                aria-busy={status === "loading"}
-                                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#46745a] px-5 py-3 text-sm font-medium text-white hover:bg-[#3b6350] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+                        {!file && (
+                            <div
+                                onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+                                onDragLeave={() => setDragging(false)}
+                                onDrop={onDrop}
+                                onClick={(event) => { if (event.target !== inputRef.current) inputRef.current?.click(); }}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
+                                className={`dropzone ${dragging ? "is-dragging" : ""}`}
+                                aria-label="Pilih atau tarik gambar ke area ini"
                             >
-                                {status === "loading" ? (
-                                    <>
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
-                                        Mengonversi gambar...
-                                    </>
-                                ) : (
-                                    <>Konversi ke {outputFormat.toUpperCase()} <span aria-hidden="true">↗</span></>
-                                )}
-                            </button>
+                                <span className="dropzone-icon">
+                                    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 25V7m0 0-6 6m6-6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 23v8a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3v-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                                </span>
+                                <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk memilih file" : "Tarik gambar ke area ini"}</h3>
+                                <p className="dropzone-copy">{dragging ? "File akan diperiksa sebelum diproses." : "atau pilih gambar dari perangkat kamu."}</p>
+                                <span className="dropzone-button">Pilih gambar <span aria-hidden="true">↗</span></span>
+                                <div className="dropzone-footer">
+                                    {["JPG", "JPEG", "PNG", "WEBP"].map((format) => <span key={format} className="file-format-chip">{format}</span>)}
+                                    <span>· Maks. 10 MB</span>
+                                </div>
+                                <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(event) => { const picked = event.target.files?.[0]; if (picked) pickFile(picked); }} />
+                            </div>
                         )}
 
-                        {status === "loading" && (
-                            <p className="text-center text-sm text-stone-500" role="status">
-                                Gambar sedang diproses. Mohon tunggu.
-                            </p>
-                        )}
+                        {status === "error" && !file && <div className="workspace-alert" role="alert">{error}</div>}
 
-                        {status === "error" && file && (
-                            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-                                {error}
-                            </p>
-                        )}
-
-                        {status === "done" && resultUrl && (
-                            <div className="space-y-4 rounded-3xl border border-[#46745a]/25 bg-[#f5f8f4] p-5 sm:p-6">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div>
-                                        <p className="text-sm font-semibold text-stone-800">Konversi selesai</p>
-                                        <p className="mt-1 text-xs text-stone-500">Hasil dalam format {outputFormat.toUpperCase()}</p>
+                        {file && (
+                            <div className="space-y-4">
+                                <div className="file-summary">
+                                    <div className="file-summary-main">
+                                        <span className="file-type-icon">IMG</span>
+                                        <div className="min-w-0">
+                                            <div className="file-summary-name">{file.name}</div>
+                                            <div className="file-summary-meta">{formatBytes(file.size)} · {dimensions ? `${dimensions.width} × ${dimensions.height} px` : "Membaca dimensi gambar"}</div>
+                                        </div>
                                     </div>
-                                    <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#46745a]">Selesai</span>
+                                    <button type="button" onClick={reset} disabled={status === "loading"} className="file-summary-action">Ganti gambar</button>
                                 </div>
 
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <figure className="min-w-0">
-                                        <figcaption className="mb-2 text-xs font-medium text-stone-500">Gambar asli</figcaption>
-                                        <div className="flex h-64 items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
-                                            {originalUrl && (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img
-                                                    src={originalUrl}
-                                                    alt="Gambar asli"
-                                                    onLoad={(event) => setDimensions({
-                                                        width: event.currentTarget.naturalWidth,
-                                                        height: event.currentTarget.naturalHeight,
-                                                    })}
-                                                    className="max-h-full max-w-full object-contain"
-                                                />
-                                            )}
+                                <div>
+                                    <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                                        <div>
+                                            <p className="panel-eyebrow">Output format</p>
+                                            <h3 className="panel-title">Pilih format tujuan</h3>
                                         </div>
-                                    </figure>
-                                    <figure className="min-w-0">
-                                        <figcaption className="mb-2 text-xs font-medium text-stone-500">Hasil konversi</figcaption>
-                                        <div className="flex h-64 items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-white p-3">
-                                            {outputFormat === "tiff" ? (
-                                                <div className="max-w-xs text-center">
-                                                    <div className="text-lg font-semibold tracking-wide text-stone-700">TIFF</div>
-                                                    <p className="mt-2 text-xs leading-relaxed text-stone-500">
-                                                        Preview TIFF belum didukung sebagian besar browser. Unduh file untuk membukanya di aplikasi gambar.
-                                                    </p>
+                                        <span className="text-[9px] text-[#8b978e]">Klik kartu untuk memilih</span>
+                                    </div>
+                                    <div className="format-grid">
+                                        {FORMATS.map((format) => (
+                                            <button key={format.value} type="button" disabled={status === "loading"} onClick={() => {
+                                                setOutputFormat(format.value);
+                                                setResultUrl(null);
+                                                setResultSize(0);
+                                                if (status === "done" || status === "error") setStatus("ready");
+                                                setError(null);
+                                            }} aria-pressed={outputFormat === format.value} className={`format-card ${outputFormat === format.value ? "is-selected" : ""}`}>
+                                                {outputFormat === format.value && <span className="format-card-check">✓</span>}
+                                                <span className="format-card-code">{format.label}</span>
+                                                <span className="format-card-name">{format.use}</span>
+                                                <span className="format-card-desc">{format.description}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {hasQuality && (
+                                    <div className="setting-box">
+                                        <div className="setting-heading">
+                                            <label htmlFor="image-quality" className="setting-label">Kualitas {outputFormat.toUpperCase()}</label>
+                                            <span className="setting-value">{quality}<small className="ml-1 text-[9px] font-semibold text-[#78917e]">%</small></span>
+                                        </div>
+                                        <input id="image-quality" type="range" min="1" max="100" value={quality} disabled={status === "loading"} onChange={(event) => setQuality(Number(event.target.value))} className="setting-range" />
+                                        <div className="flex justify-between text-[9px] text-[#96a198]"><span>File lebih kecil</span><span>Kualitas lebih tinggi</span></div>
+                                        <div className="preset-row">
+                                            {[60, 75, 85, 90, 100].map((value) => <button key={value} type="button" disabled={status === "loading"} onClick={() => setQuality(value)} className={`preset-chip ${quality === value ? "is-active" : ""}`}>{value}%</button>)}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {hasBackground && (
+                                    <div className="setting-box">
+                                        <div className="setting-heading">
+                                            <div>
+                                                <p className="setting-label">Warna pengganti transparansi</p>
+                                                <p className="panel-description">Area transparan pada format {outputFormat.toUpperCase()} akan diisi warna ini.</p>
+                                            </div>
+                                            <label className="flex items-center gap-2 rounded-lg border border-[#e2eae2] bg-white px-2 py-1.5 text-[9px] font-bold text-[#617267]">
+                                                {backgroundColor.toUpperCase()}
+                                                <input type="color" disabled={status === "loading"} value={backgroundColor} onChange={(event) => setBackgroundColor(event.target.value)} aria-label={`Pilih warna latar ${outputFormat.toUpperCase()}`} className="h-7 w-8 cursor-pointer rounded border-0 bg-transparent p-0" />
+                                            </label>
+                                        </div>
+                                        <div className="preset-row">
+                                            {["#ffffff", "#f1f1f1", "#000000", "#2f7651"].map((color) => <button key={color} type="button" disabled={status === "loading"} onClick={() => setBackgroundColor(color)} aria-label={`Gunakan warna ${color}`} className={`h-6 w-6 rounded-full border-2 border-white shadow-[0_0_0_1px_#d9e2d9] ${backgroundColor.toLowerCase() === color ? "ring-2 ring-[#4b8a5e] ring-offset-1" : ""}`} style={{ backgroundColor: color }} />)}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {status !== "done" && (
+                                    <button type="button" onClick={convert} disabled={status === "loading"} aria-busy={status === "loading"} className="action-primary w-full">
+                                        {status === "loading" ? <><span className="processing-orbit !h-4 !w-4 !border-white/40 !border-t-white" /> Mengonversi gambar...</> : <>Konversi ke {outputFormat.toUpperCase()} <span aria-hidden="true">↗</span></>}
+                                    </button>
+                                )}
+
+                                {status === "loading" && (
+                                    <div className="processing-card" role="status" aria-live="polite">
+                                        <span className="processing-orbit" />
+                                        <div className="processing-copy"><strong>Mengonversi ke {outputFormat.toUpperCase()}...</strong><span>Menjaga dimensi gambar dan menerapkan pengaturan yang dipilih.</span></div>
+                                    </div>
+                                )}
+
+                                {status === "error" && <div className="workspace-alert" role="alert">{error}</div>}
+
+                                {status === "done" && resultUrl && (
+                                    <div className="space-y-4">
+                                        <div className="workspace-success flex items-center justify-between gap-3">
+                                            <div><strong className="block text-[11px]">Konversi selesai</strong><span className="mt-1 block text-[9px]">File sudah siap untuk diunduh.</span></div>
+                                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#dceede] text-sm font-bold text-[#39734a]">✓</span>
+                                        </div>
+
+                                        <div className="workspace-preview">
+                                            <div className="workspace-preview-caption">
+                                                <span>Preview hasil · {outputFormat.toUpperCase()}</span>
+                                                <div className="preview-surface-switch" role="group" aria-label="Latar preview">
+                                                    <button type="button" title="Pola transparansi" aria-label="Pola transparansi" aria-pressed={previewSurface === "checker"} onClick={() => setPreviewSurface("checker")} className={`preview-surface-button preview-surface-checker ${previewSurface === "checker" ? "is-active" : ""}`} />
+                                                    <button type="button" title="Latar terang" aria-label="Latar terang" aria-pressed={previewSurface === "light"} onClick={() => setPreviewSurface("light")} className={`preview-surface-button preview-surface-light ${previewSurface === "light" ? "is-active" : ""}`} />
+                                                    <button type="button" title="Latar gelap" aria-label="Latar gelap" aria-pressed={previewSurface === "dark"} onClick={() => setPreviewSurface("dark")} className={`preview-surface-button preview-surface-dark ${previewSurface === "dark" ? "is-active" : ""}`} />
                                                 </div>
-                                            ) : (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={resultUrl} alt={`Hasil gambar ${outputFormat.toUpperCase()}`} className="max-h-full max-w-full object-contain" />
-                                            )}
+                                            </div>
+                                            <div className="workspace-preview-stage" style={{ ...activePreviewStyle, height: 300 }}>
+                                                {outputFormat === "tiff" ? (
+                                                    <div className="max-w-xs px-5 text-center">
+                                                        <div className="text-xl font-extrabold tracking-wide text-[#496550]">TIFF</div>
+                                                        <p className="mt-2 text-[10px] leading-relaxed text-[#839087]">Preview TIFF belum didukung sebagian besar browser. Unduh file untuk membukanya di aplikasi gambar.</p>
+                                                    </div>
+                                                ) : (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={resultUrl} alt={`Hasil gambar ${outputFormat.toUpperCase()}`} />
+                                                )}
+                                            </div>
+                                            <div className="mt-3 flex justify-between gap-3 text-[9px] text-[#87948a]"><span>Dimensi {dimensions ? `${dimensions.width} × ${dimensions.height} px` : "—"}</span><span>{selectedFormat.description}</span></div>
                                         </div>
-                                    </figure>
-                                </div>
 
-                                <div className="flex flex-wrap gap-x-6 gap-y-2 rounded-xl bg-white px-4 py-3 text-xs text-stone-500">
-                                    <span>Dimensi: <strong className="font-semibold text-stone-700">{dimensions ? `${dimensions.width} × ${dimensions.height} px` : "—"}</strong></span>
-                                    <span>Asli: <strong className="font-semibold text-stone-700">{formatBytes(file.size)}</strong></span>
-                                    <span>Hasil: <strong className="font-semibold text-stone-700">{formatBytes(resultSize)}</strong></span>
-                                </div>
+                                        <div className="stat-grid">
+                                            <div className="stat-card"><span className="stat-label">Ukuran awal</span><strong className="stat-value">{formatBytes(file.size)}</strong></div>
+                                            <div className="stat-card"><span className="stat-label">Ukuran hasil</span><strong className="stat-value">{formatBytes(resultSize)}</strong></div>
+                                            <div className="stat-card"><span className="stat-label">Dimensi</span><strong className="stat-value">{dimensions ? `${dimensions.width} × ${dimensions.height}` : "—"}</strong></div>
+                                        </div>
 
-                                <div className="flex flex-wrap gap-3">
-                                    <a
-                                        href={resultUrl}
-                                        download={downloadName}
-                                        className="inline-flex min-h-10 items-center justify-center rounded-xl bg-[#46745a] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3b6350]"
-                                    >
-                                        Unduh {outputFormat.toUpperCase()} ↓
-                                    </a>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setResultUrl(null);
-                                            setResultSize(0);
-                                            setStatus("ready");
-                                        }}
-                                        className="inline-flex min-h-10 items-center justify-center rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                                    >
-                                        Ubah pengaturan
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={reset}
-                                        className="inline-flex min-h-10 items-center justify-center rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                                    >
-                                        Gambar lain
-                                    </button>
-                                </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <a href={resultUrl} download={downloadName} className="action-primary"><svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 2.5v10m0 0 3.5-3.5M10 12.5 6.5 9M3.5 14v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2"/></svg> Unduh {outputFormat.toUpperCase()}</a>
+                                            <button type="button" onClick={() => { setResultUrl(null); setResultSize(0); setStatus("ready"); }} className="action-secondary">Ubah pengaturan</button>
+                                            <button type="button" onClick={reset} className="action-secondary">Gambar lain</button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </section>
-                )}
-            </main>
 
-            <footer className="mx-auto flex w-full max-w-6xl justify-between border-t border-black/10 px-6 py-6 text-xs text-stone-500">
-                <span>remove-bg</span>
-                <span>Image tools · convert</span>
+                    <aside className="workspace-rail">
+                        <div className="rail-card is-dark">
+                            <p className="rail-card-label">Format terpilih</p>
+                            <h3 className="rail-card-title">{selectedFormat.label} · {selectedFormat.use}</h3>
+                            <p className="rail-card-copy">{selectedFormat.description}. {outputFormat === "png" || outputFormat === "webp" || outputFormat === "tiff" ? "Format ini dapat menyimpan transparansi." : "Format ini tidak mempertahankan transparansi."}</p>
+                            <div className="mt-4 border-t border-white/15 pt-3 text-[9px] font-semibold text-[#d6e8d8]">. {outputFormat.toUpperCase()} · Output image</div>
+                        </div>
+
+                        <div className="rail-card">
+                            <p className="rail-card-label">Alur singkat</p>
+                            <ul className="rail-list">
+                                <li><i>1</i><span>Unggah gambar sumber dalam JPG, PNG, atau WEBP.</span></li>
+                                <li><i>2</i><span>Pilih format tujuan dan sesuaikan pengaturan.</span></li>
+                                <li><i>3</i><span>Konversi lalu unduh file hasilnya.</span></li>
+                            </ul>
+                        </div>
+
+                        <div className="rail-card">
+                            <p className="rail-card-label">Catatan format</p>
+                            <h3 className="rail-card-title">Transparansi & kualitas</h3>
+                            <p className="rail-card-copy">PNG, WEBP, dan TIFF dapat mempertahankan transparansi. JPG dan BMP mengisi area transparan dengan warna latar yang kamu pilih.</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <footer className="workspace-footer">
+                <span><strong>remove-bg</strong> · Image workspace</span>
+                <span>Simple tools, cleaner workflow.</span>
             </footer>
-        </div>
+        </main>
     );
 }
