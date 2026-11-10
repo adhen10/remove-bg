@@ -22,12 +22,12 @@ def convert_image_bytes(
     quality: int = 90,
     background_color: str = "#ffffff",
 ) -> tuple[bytes, str, str]:
-    """Convert a supported image to PNG, JPEG, or WEBP."""
+    """Convert a supported image to PNG, JPEG, WEBP, BMP, or TIFF."""
     selected_format = OUTPUT_FORMATS.get(output_format.strip().lower())
     if selected_format is None:
         raise HTTPException(
             status_code=400,
-            detail="Format tujuan harus PNG, JPG, atau WEBP.",
+            detail="Format tujuan harus PNG, JPG, WEBP, BMP, atau TIFF.",
         )
 
     if not 1 <= quality <= 100:
@@ -67,12 +67,16 @@ def convert_image_bytes(
             optimize=True,
             progressive=True,
         )
-    else:
+    elif pillow_format == "WEBP":
         output_image.save(
             output,
             format="WEBP",
             quality=quality,
             method=6,
         )
+    elif pillow_format == "BMP":
+        output_image.save(output, format="BMP")
+    else:
+        output_image.save(output, format="TIFF", compression="tiff_deflate")
 
     return output.getvalue(), media_type, extension
