@@ -5,7 +5,7 @@ A small utility workspace for image and PDF processing, built with Next.js and P
 ## Available tools
 
 - **Remove background** — remove image backgrounds and return transparent PNG files.
-- **Image converter** — convert PNG, JPG/JPEG, and WEBP images between supported formats.
+- **Image converter** — convert JPG/JPEG, PNG, or WEBP inputs into PNG, JPG, WEBP, BMP, or TIFF.
 - **Compress PDF** — recompress embedded images and optimize PDF structure.
 
 ## Stack
@@ -27,7 +27,8 @@ backend/
 │   └── pdf.py                 # PDF upload endpoints
 ├── services/
 │   ├── background_remover.py  # Background removal processing
-│   └── image_converter.py    # PNG / JPG / WEBP conversion
+│   ├── image_converter.py     # PNG / JPG / WEBP / BMP / TIFF conversion
+│   └── pdf_compressor.py      # PDF compression
 ├── utils/
 │   └── image_validation.py   # Shared image decoding and validation
 └── tests/
@@ -124,11 +125,11 @@ The `POST /convert-image` endpoint accepts these multipart fields:
 | Field | Required | Values / default |
 |---|---|---|
 | `file` | Yes | JPG/JPEG, PNG, or static WEBP; maximum 10 MB by default |
-| `output_format` | Yes | `png`, `jpg`, or `webp` |
+| `output_format` | Yes | `png`, `jpg`, `webp`, `bmp`, or `tiff` |
 | `quality` | No | Integer 1–100; default `90`. Used by JPG and WEBP |
-| `background_color` | No | HEX color; default `#ffffff`. Used when flattening transparent pixels to JPG |
+| `background_color` | No | HEX color; default `#ffffff`. Used when flattening transparent pixels to JPG or BMP |
 
-PNG preserves transparency. JPG does not support transparency, so transparent areas are filled with the selected background color. WEBP supports transparency. Conversion keeps the original image dimensions; decoded image size is bounded by `MAX_IMAGE_PIXELS`.
+PNG, WEBP, and TIFF preserve transparency. JPG and BMP do not preserve transparency in this tool, so transparent areas are filled with the selected background color. Quality is configurable for lossy JPG and WEBP output. Conversion keeps the original image dimensions; decoded image size is bounded by `MAX_IMAGE_PIXELS`.
 
 Supported background-removal input formats: JPG/JPEG, PNG, and static WEBP. Images are resized to the configured maximum side before AI processing.
 
