@@ -46,4 +46,4 @@ jobs:
       - name: Compile Python files
         run: python -m compileall -q backend
       - name: Test image converter
-        run: PYTHONPATH=backend python -m unittest discover -s backend/tests -v
+        run: python -m unittest discover -s backend/tests -t backend -v
