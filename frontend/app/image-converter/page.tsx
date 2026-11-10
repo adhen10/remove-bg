@@ -272,6 +272,7 @@ export default function ImageConverter() {
                                     <button
                                         key={format.value}
                                         type="button"
+                                        disabled={status === "loading"}
                                         onClick={() => {
                                             setOutputFormat(format.value);
                                             setResultUrl(null);
@@ -300,6 +301,7 @@ export default function ImageConverter() {
                                 <input
                                     id="image-quality"
                                     type="range"
+                                    disabled={status === "loading"}
                                     min="1"
                                     max="100"
                                     value={quality}
@@ -325,6 +327,7 @@ export default function ImageConverter() {
                                     <span>{backgroundColor.toUpperCase()}</span>
                                     <input
                                         type="color"
+                                        disabled={status === "loading"}
                                         value={backgroundColor}
                                         onChange={(event) => setBackgroundColor(event.target.value)}
                                         aria-label="Pilih warna latar JPG"
