@@ -47,7 +47,22 @@ def remove_light_background(data: bytes, sensitivity: int = 18) -> bytes:
         ),
         axis=0,
     )
-    background_rgb = np.median(border_pixels, axis=0).astype(np.float32)
+    border_alpha = np.concatenate(
+        (
+            source_alpha[:border_width, :].reshape(-1),
+            source_alpha[-border_width:, :].reshape(-1),
+            source_alpha[:, :border_width].reshape(-1),
+            source_alpha[:, -border_width:].reshape(-1),
+        ),
+        axis=0,
+    )
+    opaque_border_pixels = border_pixels[border_alpha == 255]
+    if opaque_border_pixels.size == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Tidak ditemukan area kertas terang untuk memperkirakan background.",
+        )
+    background_rgb = np.median(opaque_border_pixels, axis=0).astype(np.float32)
 
     background_luminance = float(
         np.dot(background_rgb, np.array([0.299, 0.587, 0.114], dtype=np.float32))
