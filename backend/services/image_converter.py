@@ -11,6 +11,8 @@ OUTPUT_FORMATS = {
     "jpg": ("JPEG", "image/jpeg", "jpg"),
     "jpeg": ("JPEG", "image/jpeg", "jpg"),
     "webp": ("WEBP", "image/webp", "webp"),
+    "bmp": ("BMP", "image/bmp", "bmp"),
+    "tiff": ("TIFF", "image/tiff", "tiff"),
 }
 
 
@@ -44,7 +46,7 @@ def convert_image_bytes(
     image = decode_image(data)
     has_alpha = "A" in image.getbands() or "transparency" in image.info
 
-    if pillow_format == "JPEG":
+    if pillow_format in {"JPEG", "BMP"}:
         rgba_image = image.convert("RGBA")
         flattened = Image.new("RGB", rgba_image.size, background_color)
         flattened.paste(rgba_image, mask=rgba_image.getchannel("A"))
