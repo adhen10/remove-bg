@@ -17,6 +17,7 @@ const checkerboard = {
 } as const;
 
 type Status = "idle" | "loading" | "done" | "error";
+type RemovalMode = "ai" | "signature";
 
 function UploadIcon() {
   return (
@@ -37,6 +38,8 @@ function DownloadIcon() {
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
+  const [removalMode, setRemovalMode] = useState<RemovalMode>("ai");
+  const [sensitivity, setSensitivity] = useState(18);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -63,7 +66,7 @@ export default function Home() {
     return () => {
       requestControllerRef.current?.abort();
     };
-  }, []);
+  }, [removalMode, sensitivity]);
 
   const process = useCallback(async (picked: File) => {
     requestControllerRef.current?.abort();
@@ -117,6 +120,10 @@ export default function Home() {
     try {
       const form = new FormData();
       form.append("file", picked);
+      form.append("mode", removalMode);
+      if (removalMode === "signature") {
+        form.append("sensitivity", String(sensitivity));
+      }
       const res = await fetch(`${API_URL}/remove-bg`, {
         method: "POST",
         body: form,
@@ -230,6 +237,60 @@ export default function Home() {
             File tidak disimpan
           </span>
         </div>
+
+        {!file && (
+          <section className="mb-5 space-y-3" aria-label="Pilih metode penghapusan background">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Metode penghapusan</p>
+              <p className="mt-1 text-xs text-stone-500">Pilih metode sesuai jenis gambar yang kamu proses.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                aria-pressed={removalMode === "ai"}
+                onClick={() => setRemovalMode("ai")}
+                className={`rounded-xl border p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] ${removalMode === "ai" ? "border-[#6c9877] bg-[#f2f7f1] ring-1 ring-[#6c9877]" : "border-stone-200 bg-white hover:border-stone-300"}`}
+              >
+                <span className="block text-sm font-semibold text-stone-800">AI Background Removal</span>
+                <span className="mt-1 block text-xs leading-relaxed text-stone-500">Untuk foto manusia, produk, hewan, dan objek kompleks.</span>
+              </button>
+              <button
+                type="button"
+                aria-pressed={removalMode === "signature"}
+                onClick={() => setRemovalMode("signature")}
+                className={`rounded-xl border p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#46745a] ${removalMode === "signature" ? "border-[#6c9877] bg-[#f2f7f1] ring-1 ring-[#6c9877]" : "border-stone-200 bg-white hover:border-stone-300"}`}
+              >
+                <span className="block text-sm font-semibold text-stone-800">Signature / Document</span>
+                <span className="mt-1 block text-xs leading-relaxed text-stone-500">Untuk tanda tangan, tulisan, dan dokumen berlatar putih atau terang.</span>
+              </button>
+            </div>
+            {removalMode === "signature" && (
+              <div className="rounded-xl border border-stone-200 bg-white p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="signature-sensitivity" className="text-sm font-medium text-stone-700">Pembersihan background</label>
+                  <span className="text-sm font-semibold tabular-nums text-stone-700">{sensitivity}</span>
+                </div>
+                <input
+                  id="signature-sensitivity"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={sensitivity}
+                  onChange={(event) => setSensitivity(Number(event.target.value))}
+                  className="mt-3 w-full accent-[#46745a]"
+                />
+                <div className="mt-1 flex justify-between text-xs text-stone-400">
+                  <span>Jaga detail tipis</span>
+                  <span>Bersihkan lebih kuat</span>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                  Nilai lebih tinggi menghapus noda terang lebih agresif, tetapi bisa mengurangi goresan yang sangat tipis.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
         {(status === "idle" || (status === "error" && !file)) && (
           <div
@@ -494,8 +555,8 @@ export default function Home() {
         )}
 
         <div className="tool-footnote">
-          <span>Input: JPG, PNG, WEBP</span>
-          <span>Output: PNG transparan</span>
+          <span>Metode: {removalMode === "ai" ? "AI" : "Signature / Document"}</span>
+          <span>Input: JPG, PNG, WEBP · Output: PNG
         </div>
       </section>
 
