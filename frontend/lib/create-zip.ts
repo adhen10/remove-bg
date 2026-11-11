@@ -131,6 +131,13 @@ export function createZip(entries: ZipEntry[]) {
 
   const endRecord = makeEndRecord(entries.length, centralSize, localOffset);
   const archiveParts = [...localParts, ...centralParts, endRecord];
+  const blobParts = archiveParts.map(
+    (part) =>
+      part.buffer.slice(
+        part.byteOffset,
+        part.byteOffset + part.byteLength,
+      ) as ArrayBuffer,
+  );
 
-  return new Blob(archiveParts as BlobPart[], { type: "application/zip" });
+  return new Blob(blobParts, { type: "application/zip" });
 }
