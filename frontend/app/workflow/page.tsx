@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import { createZip, type ZipEntry } from "@/lib/create-zip";
+import styles from "./workflow.module.css";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -399,7 +400,7 @@ export default function WorkflowPage() {
               : "Siap";
 
   return (
-    <main className="workspace-shell">
+    <main className={`workspace-shell ${styles.workflowPage}`}>
       <SiteHeader />
 
       <div className="workspace-main workflow-main">
