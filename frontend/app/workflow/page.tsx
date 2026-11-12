@@ -448,8 +448,12 @@ export default function WorkflowPage() {
               </span>
               <strong>{dragging ? "Lepaskan gambar di sini" : "Tarik gambar ke area ini"}</strong>
               <span>atau klik untuk memilih beberapa file</span>
-              <div className="workflow-format-hints">
-                <span>JPG</span><span>PNG</span><span>WEBP</span><span>Maks. 10 MB / file</span>
+              <div className="workflow-format-hints" aria-label="Format gambar yang didukung">
+                <span className="workflow-format-caption">Format input</span>
+                <span className="workflow-format-type">JPG</span>
+                <span className="workflow-format-type">PNG</span>
+                <span className="workflow-format-type">WEBP</span>
+                <span className="workflow-format-size">Maks. 10 MB / file</span>
               </div>
               <input
                 ref={inputRef}
