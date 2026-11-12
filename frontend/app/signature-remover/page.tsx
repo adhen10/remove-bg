@@ -230,7 +230,7 @@ export default function SignatureRemover() {
       <div className="workspace-main">
         <header className="tool-topbar">
           <h1 className="tool-topbar-title">Bersihkan Tanda Tangan & Dokumen</h1>
-          <span className="tool-topbar-meta">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
+          {status !== "idle" && <span className="tool-topbar-meta">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : "Error"}</span>}
         </header>
 
         <div className="workspace-grid">
@@ -241,7 +241,7 @@ export default function SignatureRemover() {
                 <h2 className="panel-title">{file ? "Dokumen sumber" : "Pengaturan pembersihan"}</h2>
                 
               </div>
-              <span className="meta-pill">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
+              {status !== "idle" && <span className="meta-pill">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : "Error"}</span>}
             </div>
 
             {!file && (
