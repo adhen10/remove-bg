@@ -258,6 +258,9 @@ export default function SignatureRemover() {
                   step="1"
                   value={sensitivity}
                   onChange={(event) => setSensitivity(Number(event.target.value))}
+                  style={{
+                    background: `linear-gradient(to right, #43875b ${sensitivity}%, #e6eee7 ${sensitivity}%)`,
+                  }}
                   className="setting-range"
                 />
                 <div className="flex justify-between text-[9px] text-[#96a198]">
