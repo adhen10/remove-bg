@@ -1926,3 +1926,236 @@ body {
 .workflowPage .workflow-tool-link:hover span {
   text-decoration: underline;
 }
+
+
+/* Refined controls for the consolidated utility workspace. */
+.workflowPage .workflow-custom-select {
+  position: relative;
+  width: 100%;
+}
+.workflowPage .workflow-select-trigger {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid #dfe8df;
+  border-radius: 8px;
+  color: #405448;
+  background: linear-gradient(180deg, #fff 0%, #fbfdfb 100%);
+  box-shadow: 0 1px 2px rgba(28, 57, 36, .025);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.workflowPage .workflow-select-trigger:hover:not(:disabled) {
+  border-color: #a9c7ae;
+  background: #fff;
+}
+.workflowPage .workflow-select-trigger:focus-visible {
+  outline: none;
+  border-color: #72a47d;
+  box-shadow: 0 0 0 3px rgba(74, 133, 88, .13);
+}
+.workflowPage .workflow-select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.workflowPage .workflow-select-trigger svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: #7d9181;
+  transition: transform .16s ease;
+}
+.workflowPage .workflow-select-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.workflowPage .workflow-select-options {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 3px;
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid #dce7dd;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(34, 61, 40, .13);
+  animation: workflow-select-enter .13s ease-out;
+}
+.workflowPage .workflow-select-option {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  color: #68786d;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition: color .12s ease, background .12s ease;
+}
+.workflowPage .workflow-select-option:hover,
+.workflowPage .workflow-select-option:focus-visible {
+  outline: none;
+  color: #2e6843;
+  background: #f1f7f1;
+}
+.workflowPage .workflow-select-option.is-selected {
+  color: #2f7047;
+  background: #edf5ee;
+  font-weight: 800;
+}
+.workflowPage .workflow-select-option svg {
+  width: 14px;
+  height: 14px;
+  color: #43875b;
+}
+@keyframes workflow-select-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Signature/document sensitivity slider: visible progress, softer track and thumb. */
+.setting-range {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 7px;
+  margin: 19px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+.setting-range::-webkit-slider-runnable-track {
+  height: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+.setting-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 19px;
+  height: 19px;
+  margin-top: -6px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #347b50;
+  box-shadow: 0 1px 5px rgba(31, 74, 43, .28), 0 0 0 1px rgba(52, 123, 80, .18);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.setting-range::-moz-range-track {
+  height: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: #e6eee7;
+}
+.setting-range::-moz-range-progress {
+  height: 7px;
+  border-radius: 999px;
+  background: #43875b;
+}
+.setting-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #347b50;
+  box-shadow: 0 1px 5px rgba(31, 74, 43, .28), 0 0 0 1px rgba(52, 123, 80, .18);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.setting-range:hover::-webkit-slider-thumb,
+.setting-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 5px rgba(67, 135, 91, .13), 0 1px 5px rgba(31, 74, 43, .25);
+  transform: scale(1.04);
+}
+.setting-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 5px rgba(67, 135, 91, .13), 0 1px 5px rgba(31, 74, 43, .25);
+}
+.setting-range:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.setting-box {
+  border-color: #e1ebe2;
+  background: linear-gradient(180deg, #fcfefc 0%, #f8fbf8 100%);
+}
+.setting-heading .setting-value {
+  min-width: 62px;
+  padding: 5px 8px;
+  border: 1px solid #dce9de;
+  border-radius: 7px;
+  background: #f0f7f1;
+  text-align: center;
+}
+.workflowPage .workflow-range-setting input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: #e6eee7;
+  cursor: pointer;
+}
+.workflowPage .workflow-range-setting input[type="range"]::-webkit-slider-runnable-track {
+  height: 7px;
+  border-radius: 999px;
+  background: transparent;
+}
+.workflowPage .workflow-range-setting input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  margin-top: -5px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #347b50;
+  box-shadow: 0 1px 4px rgba(31, 74, 43, .25);
+}
+.workflowPage .workflow-range-setting input[type="range"]::-moz-range-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #e6eee7;
+}
+.workflowPage .workflow-range-setting input[type="range"]::-moz-range-progress {
+  height: 7px;
+  border-radius: 999px;
+  background: #43875b;
+}
+.workflowPage .workflow-range-setting input[type="range"]::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #347b50;
+  box-shadow: 0 1px 4px rgba(31, 74, 43, .25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflowPage .workflow-select-trigger,
+  .workflowPage .workflow-select-trigger svg,
+  .workflowPage .workflow-select-option,
+  .setting-range::-webkit-slider-thumb,
+  .setting-range::-moz-range-thumb {
+    transition: none !important;
+    animation: none !important;
+  }
+}
