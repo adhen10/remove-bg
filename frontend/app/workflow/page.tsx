@@ -80,6 +80,8 @@ export default function WorkflowPage() {
   const [removeBackground, setRemoveBackground] = useState(true);
   const [convertOutput, setConvertOutput] = useState(true);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("png");
+  const [formatMenuOpen, setFormatMenuOpen] = useState(false);
+  const formatButtonRef = useRef<HTMLButtonElement>(null);
   const [quality, setQuality] = useState(88);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [phase, setPhase] = useState<JobPhase>("idle");
@@ -403,7 +405,7 @@ export default function WorkflowPage() {
             <h1 className="tool-topbar-title">Pengolahan Gambar</h1>
             <p className="workflow-topbar-caption">Hapus background AI, konversi format, dan unduh hasil sekaligus.</p>
           </div>
-          <span className="tool-topbar-meta">{statusLabel}</span>
+          {phase !== "idle" && <span className="tool-topbar-meta">{statusLabel}</span>}
         </header>
 
         <div className="workflow-layout">
@@ -523,7 +525,6 @@ export default function WorkflowPage() {
                   <span className="workflow-eyebrow">02 / PROCESS</span>
                   <h2 className="workflow-panel-title">Rangkaian proses</h2>
                 </div>
-                <span className="workflow-step-count">2 langkah</span>
               </div>
 
               <div className={`workflow-step-card ${removeBackground ? "is-enabled" : ""}`}>
@@ -577,17 +578,66 @@ export default function WorkflowPage() {
                   </label>
                   {convertOutput && (
                     <div className="workflow-step-options">
-                      <label className="workflow-field-label" htmlFor="workflow-format">Format hasil</label>
-                      <select
-                        id="workflow-format"
-                        value={outputFormat}
-                        disabled={isBusy}
-                        onChange={(event) => setOutputFormat(event.target.value as OutputFormat)}
+                      <span id="workflow-format-label" className="workflow-field-label">Format hasil</span>
+                      <div
+                        className="workflow-custom-select"
+                        onBlur={(event) => {
+                          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                            setFormatMenuOpen(false);
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setFormatMenuOpen(false);
+                            formatButtonRef.current?.focus();
+                          }
+                          if (event.key === "ArrowDown" && !formatMenuOpen) {
+                            event.preventDefault();
+                            setFormatMenuOpen(true);
+                          }
+                        }}
                       >
-                        {FORMATS.map((format) => (
-                          <option key={format.value} value={format.value}>{format.label}</option>
-                        ))}
-                      </select>
+                        <button
+                          ref={formatButtonRef}
+                          id="workflow-format"
+                          type="button"
+                          className="workflow-select-trigger"
+                          aria-haspopup="listbox"
+                          aria-expanded={formatMenuOpen}
+                          aria-labelledby="workflow-format-label workflow-format-value"
+                          disabled={isBusy}
+                          onClick={() => setFormatMenuOpen((open) => !open)}
+                        >
+                          <span id="workflow-format-value">{FORMATS.find((format) => format.value === outputFormat)?.label}</span>
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="m5.5 7.5 4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                        {formatMenuOpen && (
+                          <div className="workflow-select-options" role="listbox" aria-labelledby="workflow-format-label">
+                            {FORMATS.map((format) => (
+                              <button
+                                key={format.value}
+                                type="button"
+                                role="option"
+                                aria-selected={outputFormat === format.value}
+                                className={`workflow-select-option ${outputFormat === format.value ? "is-selected" : ""}`}
+                                onClick={() => {
+                                  setOutputFormat(format.value);
+                                  setFormatMenuOpen(false);
+                                }}
+                              >
+                                <span>{format.label}</span>
+                                {outputFormat === format.value && (
+                                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <path d="m4 10 4 4 8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
                       {hasQuality && (
                         <div className="workflow-range-setting">
