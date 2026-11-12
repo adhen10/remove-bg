@@ -4,10 +4,11 @@ A small utility workspace for image and PDF processing, built with Next.js and P
 
 ## Available tools
 
-- **Remove background** — remove image backgrounds using AI for complex objects or a light-background cleanup mode for signatures and documents.
-- **Image converter** — convert JPG/JPEG, PNG, or WEBP inputs into PNG, JPG, WEBP, BMP, or TIFF.
+- **Image workflow** — process up to 10 images sequentially with AI background removal, image conversion, and ZIP download.
+- **Signature / document cleanup** — remove light paper backgrounds from signatures or writing on scanned documents, with adjustable sensitivity.
 - **Compress PDF** — recompress embedded images and optimize PDF structure.
-- **One-Click Workflow** — process up to 10 images sequentially with background removal and/or format conversion, then download successful outputs as one ZIP archive.
+
+The homepage and former standalone image-converter route redirect to the consolidated image workflow so the same image operations are not exposed in multiple places.
 
 ## Stack
 
@@ -124,7 +125,7 @@ Restart the backend and restart/rebuild the Next.js frontend after changing thes
 | POST | `/convert-image` | Converts an image to PNG, JPG, WEBP, BMP, or TIFF |
 | POST | `/compress-pdf` | Accepts multipart fields `file` and `level`; returns PDF |
 
-The One-Click Workflow frontend combines the existing `/remove-bg` and `/convert-image` endpoints. It processes files sequentially, accepts up to 10 images (10 MB each by default), and creates the ZIP archive in the browser. No workflow database, upload storage, or additional backend endpoint is required.
+The image workflow frontend combines the existing `/remove-bg` (AI mode) and `/convert-image` endpoints. It processes files sequentially, accepts up to 10 images (10 MB each by default), and creates the ZIP archive in the browser. Signature / document cleanup is available from its own page and reuses `/remove-bg` with `mode=signature`. No workflow database, upload storage, or additional backend endpoint is required.
 
 ### Background removal
 
