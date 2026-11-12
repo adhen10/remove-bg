@@ -17,7 +17,6 @@ const checkerboard = {
 } as const;
 
 type Status = "idle" | "loading" | "done" | "error";
-type RemovalMode = "ai" | "signature";
 type PreviewSurface = "checker" | "light" | "dark";
 
 function UploadIcon() {
@@ -45,7 +44,6 @@ function formatBytes(bytes: number) {
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
-  const [removalMode, setRemovalMode] = useState<RemovalMode>("ai");
   const [sensitivity, setSensitivity] = useState(18);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -127,10 +125,8 @@ export default function Home() {
     try {
       const form = new FormData();
       form.append("file", picked);
-      form.append("mode", removalMode);
-      if (removalMode === "signature") {
-        form.append("sensitivity", String(sensitivity));
-      }
+      form.append("mode", "signature");
+      form.append("sensitivity", String(sensitivity));
       const res = await fetch(`${API_URL}/remove-bg`, {
         method: "POST",
         body: form,
@@ -161,7 +157,7 @@ export default function Home() {
         requestControllerRef.current = null;
       }
     }
-  }, [removalMode, sensitivity]);
+  }, [sensitivity]);
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -227,18 +223,13 @@ export default function Home() {
     ? `${file.name.replace(/\.[^.]+$/, "")}-no-bg.png`
     : "no-bg.png";
 
-  const modeDescription =
-    removalMode === "ai"
-      ? "AI / U2Net cocok untuk foto produk, manusia, hewan, dan objek dengan bentuk kompleks."
-      : "Signature / Document dirancang untuk tinta atau tulisan di atas kertas putih dan terang.";
-
   return (
     <main className="workspace-shell">
       <SiteHeader />
 
       <div className="workspace-main">
         <header className="tool-topbar">
-          <h1 className="tool-topbar-title">Hapus background</h1>
+          <h1 className="tool-topbar-title">Hapus BG Tanda Tangan</h1>
           <span className="tool-topbar-meta">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
         </header>
 
@@ -247,50 +238,32 @@ export default function Home() {
             <div className="panel-heading">
               <div>
                 
-                <h2 className="panel-title">{file ? "Gambar" : "Metode"}</h2>
+                <h2 className="panel-title">{file ? "Gambar" : "Pengaturan pembersihan"}</h2>
                 
               </div>
               <span className="meta-pill">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
             </div>
 
             {!file && (
-              <>
-                <div className="mode-grid" role="group" aria-label="Metode penghapusan background">
-                  <button type="button" aria-pressed={removalMode === "ai"} onClick={() => setRemovalMode("ai")} className={`mode-card ${removalMode === "ai" ? "is-selected" : ""}`}>
-                    <span className="mode-check">✓</span>
-                    <span className="mode-card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5.5h16v13H4z"/><path d="m4 15 4-4 3 3 3-5 6 7"/></svg>
-                    </span>
-                    <span className="mode-card-title">AI Background Removal</span>
-                    
-                  </button>
-                  <button type="button" aria-pressed={removalMode === "signature"} onClick={() => setRemovalMode("signature")} className={`mode-card ${removalMode === "signature" ? "is-selected" : ""}`}>
-                    <span className="mode-check">✓</span>
-                    <span className="mode-card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 17c3.5 0 3.5-9 7-9 2.8 0 1.3 8 4 8 1.5 0 2.4-3 5-3"/><path d="M4 20h16"/></svg>
-                    </span>
-                    <span className="mode-card-title">Signature / Document</span>
-                    
-                  </button>
+              <div className="setting-box">
+                <div className="mb-3">
+                  <p className="setting-label">Signature / Document</p>
+                  <p className="mt-1 text-[9px] leading-relaxed text-[#87948a]">
+                    Dirancang untuk tanda tangan, cap, atau tulisan pada kertas putih dan terang.
+                  </p>
                 </div>
-
-                {removalMode === "signature" && (
-                  <div className="setting-box">
-                    <div className="setting-heading">
-                      <label htmlFor="signature-sensitivity" className="setting-label">Sensitivitas pembersihan</label>
-                      <span className="setting-value">{sensitivity}<small className="ml-1 text-[9px] font-semibold text-[#78917e]">/ 100</small></span>
-                    </div>
-                    <input id="signature-sensitivity" type="range" min="0" max="100" step="1" value={sensitivity} onChange={(event) => setSensitivity(Number(event.target.value))} className="setting-range" />
-                    <div className="flex justify-between text-[9px] text-[#96a198]"><span>Jaga detail tipis</span><span>Bersihkan noda lebih kuat</span></div>
-                    <div className="preset-row">
-                      {[{label:"Detail",value:8},{label:"Seimbang",value:18},{label:"Bersih",value:38},{label:"Agresif",value:60}].map((preset) => (
-                        <button key={preset.value} type="button" onClick={() => setSensitivity(preset.value)} className={`preset-chip ${sensitivity === preset.value ? "is-active" : ""}`}>{preset.label}</button>
-                      ))}
-                    </div>
-                    
-                  </div>
-                )}
-              </>
+                <div className="setting-heading">
+                  <label htmlFor="signature-sensitivity" className="setting-label">Sensitivitas pembersihan</label>
+                  <span className="setting-value">{sensitivity}<small className="ml-1 text-[9px] font-semibold text-[#78917e]">/ 100</small></span>
+                </div>
+                <input id="signature-sensitivity" type="range" min="0" max="100" step="1" value={sensitivity} onChange={(event) => setSensitivity(Number(event.target.value))} className="setting-range" />
+                <div className="flex justify-between text-[9px] text-[#96a198]"><span>Jaga detail tipis</span><span>Bersihkan noda lebih kuat</span></div>
+                <div className="preset-row">
+                  {[{label:"Detail",value:8},{label:"Seimbang",value:18},{label:"Bersih",value:38},{label:"Agresif",value:60}].map((preset) => (
+                    <button key={preset.value} type="button" onClick={() => setSensitivity(preset.value)} className={`preset-chip ${sensitivity === preset.value ? "is-active" : ""}`}>{preset.label}</button>
+                  ))}
+                </div>
+              </div>
             )}
 
             {!file && (
@@ -303,10 +276,10 @@ export default function Home() {
                 tabIndex={0}
                 onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
                 className={`dropzone ${dragging ? "is-dragging" : ""}`}
-                aria-label="Pilih gambar atau tarik gambar ke area ini"
+                aria-label="Pilih foto tanda tangan atau dokumen"
               >
                 <span className="dropzone-icon"><UploadIcon /></span>
-                <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk mulai" : "Tarik gambar ke area ini"}</h3>
+                <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk mulai" : "Tarik foto tanda tangan ke sini"}</h3>
                 
                 <span className="dropzone-button">Pilih gambar <span aria-hidden="true">↗</span></span>
                 <div className="dropzone-footer">
@@ -328,7 +301,7 @@ export default function Home() {
                     <span className="file-type-icon">IMG</span>
                     <div className="min-w-0">
                       <div className="file-summary-name">{file.name}</div>
-                      <div className="file-summary-meta">{formatBytes(file.size)} · {removalMode === "ai" ? "AI Background Removal" : "Signature / Document"}</div>
+                      <div className="file-summary-meta">{formatBytes(file.size)} · Signature / Document</div>
                     </div>
                   </div>
                   <button type="button" onClick={reset} disabled={status === "loading"} className="file-summary-action">Ganti gambar</button>
@@ -338,7 +311,7 @@ export default function Home() {
                   <div className="processing-card" role="status" aria-live="polite">
                     <span className="processing-orbit" />
                     <div className="processing-copy">
-                      <strong>{removalMode === "ai" ? "AI sedang memisahkan objek..." : "Membersihkan background kertas..."}</strong>
+                      <strong>Membersihkan background kertas...</strong>
                       
                     </div>
                   </div>
@@ -376,7 +349,7 @@ export default function Home() {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={originalUrl} alt="Gambar asli" onLoad={(event) => setInputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} className="comparison-image" style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }} />
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={resultUrl} alt="Gambar setelah background dihapus" onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} className="comparison-image" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }} />
+                          <img src={resultUrl} alt="Hasil pembersihan background tanda tangan" onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} className="comparison-image" style={{ clipPath: `inset(0 0 0 ${comparePosition}%)` }} />
                           <span className="comparison-tag comparison-tag-before">Asli</span>
                           <span className="comparison-tag comparison-tag-after">Transparan</span>
                           <span className="comparison-divider" style={{ left: `${comparePosition}%` }} aria-hidden="true"><span className="comparison-knob"><svg viewBox="0 0 20 20" fill="none"><path d="m7 5-4 5 4 5M13 5l4 5-4 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></span></span>
@@ -386,10 +359,10 @@ export default function Home() {
                       </figure>
                     ) : (
                       <figure className="workspace-preview">
-                        <div className="workspace-preview-caption"><span>Hasil PNG transparan</span><span>{outputDimensions ? `${outputDimensions.width} × ${outputDimensions.height} px` : "Preview"}</span></div>
+                        <div className="workspace-preview-caption"><span>Hasil tanda tangan dengan background transparan</span><span>{outputDimensions ? `${outputDimensions.width} × ${outputDimensions.height} px` : "Preview"}</span></div>
                         <div className="workspace-preview-stage" style={{ ...activePreviewStyle, height: 390 }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={resultUrl} alt="Hasil PNG transparan" onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
+                          <img src={resultUrl} alt="Hasil tanda tangan PNG transparan" onLoad={(event) => setOutputDimensions({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })} />
                         </div>
                       </figure>
                     )}
