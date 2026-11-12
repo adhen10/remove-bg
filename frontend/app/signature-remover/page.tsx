@@ -229,7 +229,7 @@ export default function SignatureRemover() {
 
       <div className="workspace-main">
         <header className="tool-topbar">
-          <h1 className="tool-topbar-title">Hapus BG Tanda Tangan</h1>
+          <h1 className="tool-topbar-title">Bersihkan Tanda Tangan & Dokumen</h1>
           <span className="tool-topbar-meta">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
         </header>
 
@@ -238,7 +238,7 @@ export default function SignatureRemover() {
             <div className="panel-heading">
               <div>
                 
-                <h2 className="panel-title">{file ? "Gambar" : "Pengaturan"}</h2>
+                <h2 className="panel-title">{file ? "Dokumen sumber" : "Pengaturan pembersihan"}</h2>
                 
               </div>
               <span className="meta-pill">{status === "loading" ? "Memproses" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
@@ -292,7 +292,7 @@ export default function SignatureRemover() {
                 aria-label="Pilih gambar tanda tangan atau dokumen"
               >
                 <span className="dropzone-icon"><UploadIcon /></span>
-                <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk mulai" : "Tarik gambar ke area ini"}</h3>
+                <h3 className="dropzone-title">{dragging ? "Lepaskan gambar untuk mulai" : "Tarik foto tanda tangan atau dokumen ke sini"}</h3>
                 
                 <span className="dropzone-button">Pilih gambar <span aria-hidden="true">↗</span></span>
                 <div className="dropzone-footer">
