@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "remove-bg — Image & PDF Tools",
+  title: "File Tools — Pengolahan Gambar & PDF",
   description:
-    "Alat sederhana untuk menghapus background, mengonversi format gambar, dan mengompres PDF.",
+    "Ruang kerja pribadi untuk pengolahan gambar, pembersihan tanda tangan dan dokumen, serta kompresi PDF.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

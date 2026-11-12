@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { createZip, type ZipEntry } from "@/lib/create-zip";
 
@@ -20,7 +21,6 @@ const FORMATS = [
 ] as const;
 
 type OutputFormat = (typeof FORMATS)[number]["value"];
-type RemovalMode = "ai" | "signature";
 type ItemStatus = "queued" | "processing" | "done" | "error";
 type JobPhase = "idle" | "processing" | "done" | "partial" | "cancelled" | "error";
 
@@ -78,10 +78,10 @@ async function responseError(response: Response, fallback: string) {
 export default function WorkflowPage() {
   const [items, setItems] = useState<WorkflowItem[]>([]);
   const [removeBackground, setRemoveBackground] = useState(true);
-  const [removalMode, setRemovalMode] = useState<RemovalMode>("ai");
-  const [sensitivity, setSensitivity] = useState(18);
   const [convertOutput, setConvertOutput] = useState(true);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("png");
+  const [formatMenuOpen, setFormatMenuOpen] = useState(false);
+  const formatButtonRef = useRef<HTMLButtonElement>(null);
   const [quality, setQuality] = useState(88);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [phase, setPhase] = useState<JobPhase>("idle");
@@ -232,10 +232,7 @@ export default function WorkflowPage() {
           if (removeBackground) {
             const form = new FormData();
             form.append("file", item.file);
-            form.append("mode", removalMode);
-            if (removalMode === "signature") {
-              form.append("sensitivity", String(sensitivity));
-            }
+            form.append("mode", "ai");
 
             const response = await fetch(`${API_URL}/remove-bg`, {
               method: "POST",
@@ -405,10 +402,10 @@ export default function WorkflowPage() {
       <div className="workspace-main workflow-main">
         <header className="tool-topbar">
           <div>
-            <h1 className="tool-topbar-title">One-Click Workflow</h1>
-            <p className="workflow-topbar-caption">Proses beberapa gambar dalam satu rangkaian.</p>
+            <h1 className="tool-topbar-title">Pengolahan Gambar</h1>
+            <p className="workflow-topbar-caption">Hapus background AI, konversi format, dan unduh hasil sekaligus.</p>
           </div>
-          <span className="tool-topbar-meta">{statusLabel}</span>
+          {phase !== "idle" && <span className="tool-topbar-meta">{statusLabel}</span>}
         </header>
 
         <div className="workflow-layout">
@@ -451,8 +448,12 @@ export default function WorkflowPage() {
               </span>
               <strong>{dragging ? "Lepaskan gambar di sini" : "Tarik gambar ke area ini"}</strong>
               <span>atau klik untuk memilih beberapa file</span>
-              <div className="workflow-format-hints">
-                <span>JPG</span><span>PNG</span><span>WEBP</span><span>Maks. 10 MB / file</span>
+              <div className="workflow-format-hints" aria-label="Format gambar yang didukung">
+                <span className="workflow-format-caption">Format input</span>
+                <span className="workflow-format-type">JPG</span>
+                <span className="workflow-format-type">PNG</span>
+                <span className="workflow-format-type">WEBP</span>
+                <span className="workflow-format-size">Maks. 10 MB / file</span>
               </div>
               <input
                 ref={inputRef}
@@ -528,7 +529,6 @@ export default function WorkflowPage() {
                   <span className="workflow-eyebrow">02 / PROCESS</span>
                   <h2 className="workflow-panel-title">Rangkaian proses</h2>
                 </div>
-                <span className="workflow-step-count">2 langkah</span>
               </div>
 
               <div className={`workflow-step-card ${removeBackground ? "is-enabled" : ""}`}>
@@ -545,44 +545,16 @@ export default function WorkflowPage() {
                       onChange={(event) => setRemoveBackground(event.target.checked)}
                     />
                     <span>
-                      <strong>Hapus background</strong>
-                      <small>Pisahkan objek dari latar gambar.</small>
+                      <strong>Hapus background AI</strong>
+                      <small>Gunakan AI untuk memisahkan objek dari latar gambar.</small>
                     </span>
                   </label>
                   {removeBackground && (
                     <div className="workflow-step-options">
-                      <div className="workflow-segmented" role="group" aria-label="Metode penghapusan background">
-                        <button
-                          type="button"
-                          disabled={isBusy}
-                          className={removalMode === "ai" ? "is-selected" : ""}
-                          onClick={() => setRemovalMode("ai")}
-                        >
-                          AI / U2Net
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isBusy}
-                          className={removalMode === "signature" ? "is-selected" : ""}
-                          onClick={() => setRemovalMode("signature")}
-                        >
-                          Signature
-                        </button>
-                      </div>
-                      {removalMode === "signature" && (
-                        <div className="workflow-range-setting">
-                          <div><label htmlFor="workflow-sensitivity">Sensitivitas</label><strong>{sensitivity}/100</strong></div>
-                          <input
-                            id="workflow-sensitivity"
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={sensitivity}
-                            disabled={isBusy}
-                            onChange={(event) => setSensitivity(Number(event.target.value))}
-                          />
-                        </div>
-                      )}
+                      <p className="workflow-mode-note">Menggunakan AI / U2Net untuk memisahkan objek dari background.</p>
+                      <Link href="/signature-remover" className="workflow-tool-link">
+                        Untuk tanda tangan atau dokumen? <span>Buka alat khusus ↗</span>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -610,17 +582,66 @@ export default function WorkflowPage() {
                   </label>
                   {convertOutput && (
                     <div className="workflow-step-options">
-                      <label className="workflow-field-label" htmlFor="workflow-format">Format hasil</label>
-                      <select
-                        id="workflow-format"
-                        value={outputFormat}
-                        disabled={isBusy}
-                        onChange={(event) => setOutputFormat(event.target.value as OutputFormat)}
+                      <span id="workflow-format-label" className="workflow-field-label">Format hasil</span>
+                      <div
+                        className="workflow-custom-select"
+                        onBlur={(event) => {
+                          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                            setFormatMenuOpen(false);
+                          }
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setFormatMenuOpen(false);
+                            formatButtonRef.current?.focus();
+                          }
+                          if (event.key === "ArrowDown" && !formatMenuOpen) {
+                            event.preventDefault();
+                            setFormatMenuOpen(true);
+                          }
+                        }}
                       >
-                        {FORMATS.map((format) => (
-                          <option key={format.value} value={format.value}>{format.label}</option>
-                        ))}
-                      </select>
+                        <button
+                          ref={formatButtonRef}
+                          id="workflow-format"
+                          type="button"
+                          className="workflow-select-trigger"
+                          aria-haspopup="listbox"
+                          aria-expanded={formatMenuOpen}
+                          aria-labelledby="workflow-format-label workflow-format-value"
+                          disabled={isBusy}
+                          onClick={() => setFormatMenuOpen((open) => !open)}
+                        >
+                          <span id="workflow-format-value">{FORMATS.find((format) => format.value === outputFormat)?.label}</span>
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="m5.5 7.5 4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                        {formatMenuOpen && (
+                          <div className="workflow-select-options" role="listbox" aria-labelledby="workflow-format-label">
+                            {FORMATS.map((format) => (
+                              <button
+                                key={format.value}
+                                type="button"
+                                role="option"
+                                aria-selected={outputFormat === format.value}
+                                className={`workflow-select-option ${outputFormat === format.value ? "is-selected" : ""}`}
+                                onClick={() => {
+                                  setOutputFormat(format.value);
+                                  setFormatMenuOpen(false);
+                                }}
+                              >
+                                <span>{format.label}</span>
+                                {outputFormat === format.value && (
+                                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <path d="m4 10 4 4 8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
                       {hasQuality && (
                         <div className="workflow-range-setting">

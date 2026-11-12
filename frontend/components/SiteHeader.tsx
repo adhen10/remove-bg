@@ -5,21 +5,23 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
     {
-        href: "/",
-        label: "Hapus background",
+        href: "/workflow",
+        label: "Pengolahan gambar",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3.5" y="4" width="17" height="16" rx="2.5" />
                 <path d="m4 15 4-4 3 3 3-5 6 7" />
+                <path d="M16.5 5.5v4M14.5 7.5h4" />
             </svg>
         ),
     },
     {
-        href: "/image-converter",
-        label: "Image converter",
+        href: "/signature-remover",
+        label: "Tanda tangan / dokumen",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 7h10M11 4l3 3-3 3M20 17H10m3-3-3 3 3 3" />
+                <path d="M4 17c3.5 0 3.5-9 7-9 2.8 0 1.3 8 4 8 1.5 0 2.4-3 5-3" />
+                <path d="M4 20h16" />
             </svg>
         ),
     },
@@ -33,16 +35,6 @@ const TABS = [
             </svg>
         ),
     },
-    {
-        href: "/workflow",
-        label: "One-Click Workflow",
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 6h6l2 3h8M4 18h6l2-3h8" />
-                <path d="m17 6 3 3-3 3M17 12l3 3-3 3" />
-            </svg>
-        ),
-    },
 ];
 
 export default function SiteHeader() {
@@ -50,14 +42,14 @@ export default function SiteHeader() {
 
     return (
         <aside className="app-sidebar">
-            <Link href="/" className="app-sidebar-brand" aria-label="remove-bg">
+            <Link href="/workflow" className="app-sidebar-brand" aria-label="File Tools">
                 <span className="app-sidebar-mark">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M4 7.5h16M4 12h11M4 16.5h7" />
                         <path d="m16 13 4 3.5-4 3.5" />
                     </svg>
                 </span>
-                <span>remove-bg</span>
+                <span>File Tools</span>
             </Link>
 
             <div className="app-sidebar-label">TOOLS</div>
@@ -81,7 +73,7 @@ export default function SiteHeader() {
 
             <div className="app-sidebar-bottom">
                 <span className="app-sidebar-dot" />
-                <span>Workspace</span>
+                <span>Personal workspace</span>
             </div>
         </aside>
     );
