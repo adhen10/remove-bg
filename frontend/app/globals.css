@@ -1900,3 +1900,29 @@ body {
   .workflowPage .workflow-progress-track span { transition: none; }
 }
 
+
+
+/* Compact helper link for specialized processing tools. */
+.workflowPage .workflow-mode-note {
+  margin: 0;
+  color: #7f8d82;
+  font-size: 9px;
+  line-height: 1.55;
+}
+.workflowPage .workflow-tool-link {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: #7b8a7f;
+  font-size: 8px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+.workflowPage .workflow-tool-link span {
+  color: #34764d;
+  font-weight: 750;
+}
+.workflowPage .workflow-tool-link:hover span {
+  text-decoration: underline;
+}
