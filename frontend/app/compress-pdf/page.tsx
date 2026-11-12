@@ -132,7 +132,11 @@ export default function CompressPdf() {
             <div className="workspace-main">
                 <header className="tool-topbar">
           <h1 className="tool-topbar-title">Kompres PDF</h1>
-          <span className="tool-topbar-meta">{status === "loading" ? "Mengompres" : status === "done" ? "Selesai" : status === "error" ? "Error" : "Siap"}</span>
+          {(status === "loading" || status === "done" || status === "error") && (
+            <span className="tool-topbar-meta">
+              {status === "loading" ? "Mengompres" : status === "done" ? "Selesai" : "Error"}
+            </span>
+          )}
         </header>
 
                 <div className="workspace-grid">
@@ -143,7 +147,11 @@ export default function CompressPdf() {
                                 <h2 className="panel-title">{file ? "Pengaturan" : "Dokumen PDF"}</h2>
                                 
                             </div>
-                            <span className="meta-pill">{status === "loading" ? "Mengoptimalkan" : status === "done" ? "Selesai" : status === "error" ? "Perlu diperiksa" : "Langkah 01"}</span>
+                            {(status === "loading" || status === "done" || status === "error") && (
+                                <span className="meta-pill">
+                                    {status === "loading" ? "Mengoptimalkan" : status === "done" ? "Selesai" : "Perlu diperiksa"}
+                                </span>
+                            )}
                         </div>
 
                         {!file && (
