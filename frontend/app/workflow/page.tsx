@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { createZip, type ZipEntry } from "@/lib/create-zip";
 
@@ -20,7 +21,6 @@ const FORMATS = [
 ] as const;
 
 type OutputFormat = (typeof FORMATS)[number]["value"];
-type RemovalMode = "ai" | "signature";
 type ItemStatus = "queued" | "processing" | "done" | "error";
 type JobPhase = "idle" | "processing" | "done" | "partial" | "cancelled" | "error";
 
@@ -78,8 +78,6 @@ async function responseError(response: Response, fallback: string) {
 export default function WorkflowPage() {
   const [items, setItems] = useState<WorkflowItem[]>([]);
   const [removeBackground, setRemoveBackground] = useState(true);
-  const [removalMode, setRemovalMode] = useState<RemovalMode>("ai");
-  const [sensitivity, setSensitivity] = useState(18);
   const [convertOutput, setConvertOutput] = useState(true);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("png");
   const [quality, setQuality] = useState(88);
@@ -232,10 +230,7 @@ export default function WorkflowPage() {
           if (removeBackground) {
             const form = new FormData();
             form.append("file", item.file);
-            form.append("mode", removalMode);
-            if (removalMode === "signature") {
-              form.append("sensitivity", String(sensitivity));
-            }
+            form.append("mode", "ai");
 
             const response = await fetch(`${API_URL}/remove-bg`, {
               method: "POST",
@@ -405,8 +400,8 @@ export default function WorkflowPage() {
       <div className="workspace-main workflow-main">
         <header className="tool-topbar">
           <div>
-            <h1 className="tool-topbar-title">One-Click Workflow</h1>
-            <p className="workflow-topbar-caption">Proses beberapa gambar dalam satu rangkaian.</p>
+            <h1 className="tool-topbar-title">Pengolahan Gambar</h1>
+            <p className="workflow-topbar-caption">Hapus background AI, konversi format, dan unduh hasil sekaligus.</p>
           </div>
           <span className="tool-topbar-meta">{statusLabel}</span>
         </header>
@@ -545,44 +540,16 @@ export default function WorkflowPage() {
                       onChange={(event) => setRemoveBackground(event.target.checked)}
                     />
                     <span>
-                      <strong>Hapus background</strong>
-                      <small>Pisahkan objek dari latar gambar.</small>
+                      <strong>Hapus background AI</strong>
+                      <small>Gunakan AI untuk memisahkan objek dari latar gambar.</small>
                     </span>
                   </label>
                   {removeBackground && (
                     <div className="workflow-step-options">
-                      <div className="workflow-segmented" role="group" aria-label="Metode penghapusan background">
-                        <button
-                          type="button"
-                          disabled={isBusy}
-                          className={removalMode === "ai" ? "is-selected" : ""}
-                          onClick={() => setRemovalMode("ai")}
-                        >
-                          AI / U2Net
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isBusy}
-                          className={removalMode === "signature" ? "is-selected" : ""}
-                          onClick={() => setRemovalMode("signature")}
-                        >
-                          Signature
-                        </button>
-                      </div>
-                      {removalMode === "signature" && (
-                        <div className="workflow-range-setting">
-                          <div><label htmlFor="workflow-sensitivity">Sensitivitas</label><strong>{sensitivity}/100</strong></div>
-                          <input
-                            id="workflow-sensitivity"
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={sensitivity}
-                            disabled={isBusy}
-                            onChange={(event) => setSensitivity(Number(event.target.value))}
-                          />
-                        </div>
-                      )}
+                      <p className="workflow-mode-note">Menggunakan AI / U2Net untuk memisahkan objek dari background.</p>
+                      <Link href="/signature-remover" className="workflow-tool-link">
+                        Untuk tanda tangan atau dokumen? <span>Buka alat khusus ↗</span>
+                      </Link>
                     </div>
                   )}
                 </div>
