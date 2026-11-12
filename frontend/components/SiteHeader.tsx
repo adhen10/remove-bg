@@ -33,6 +33,16 @@ const TABS = [
             </svg>
         ),
     },
+    {
+        href: "/workflow",
+        label: "One-Click Workflow",
+        icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 6h6l2 3h8M4 18h6l2-3h8" />
+                <path d="m17 6 3 3-3 3M17 12l3 3-3 3" />
+            </svg>
+        ),
+    },
 ];
 
 export default function SiteHeader() {

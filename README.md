@@ -7,6 +7,7 @@ A small utility workspace for image and PDF processing, built with Next.js and P
 - **Remove background** — remove image backgrounds using AI for complex objects or a light-background cleanup mode for signatures and documents.
 - **Image converter** — convert JPG/JPEG, PNG, or WEBP inputs into PNG, JPG, WEBP, BMP, or TIFF.
 - **Compress PDF** — recompress embedded images and optimize PDF structure.
+- **One-Click Workflow** — process up to 10 images sequentially with background removal and/or format conversion, then download successful outputs as one ZIP archive.
 
 ## Stack
 
@@ -122,6 +123,8 @@ Restart the backend and restart/rebuild the Next.js frontend after changing thes
 | POST | `/remove-bg` | Accepts an image plus optional `mode` and `sensitivity`; returns transparent PNG |
 | POST | `/convert-image` | Converts an image to PNG, JPG, WEBP, BMP, or TIFF |
 | POST | `/compress-pdf` | Accepts multipart fields `file` and `level`; returns PDF |
+
+The One-Click Workflow frontend combines the existing `/remove-bg` and `/convert-image` endpoints. It processes files sequentially, accepts up to 10 images (10 MB each by default), and creates the ZIP archive in the browser. No workflow database, upload storage, or additional backend endpoint is required.
 
 ### Background removal
 
