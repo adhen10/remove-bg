@@ -1,9 +1,9 @@
 import logging
 
-import pymupdf
 from fastapi import HTTPException
 
-from config import MAX_PDF_PAGES, PDF_LEVELS
+from config import PDF_LEVELS
+from utils.pdf_validation import open_validated_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -16,30 +16,9 @@ def compress_pdf_bytes(data: bytes, level: str) -> bytes:
             detail="Level harus low, medium, atau high.",
         )
 
-    if not data.startswith(b"%PDF-"):
-        raise HTTPException(status_code=400, detail="File bukan PDF yang valid.")
+    document = open_validated_pdf(data)
 
     try:
-        document = pymupdf.open(stream=data, filetype="pdf")
-    except Exception as exc:
-        raise HTTPException(
-            status_code=400,
-            detail="PDF rusak atau tidak bisa dibaca.",
-        ) from exc
-
-    try:
-        if document.needs_pass:
-            raise HTTPException(
-                status_code=400,
-                detail="PDF diproteksi password, tidak bisa dikompres.",
-            )
-
-        if document.page_count > MAX_PDF_PAGES:
-            raise HTTPException(
-                status_code=413,
-                detail=f"PDF terlalu banyak halaman. Maksimal {MAX_PDF_PAGES} halaman.",
-            )
-
         try:
             document.rewrite_images(**PDF_LEVELS[level])
         except Exception:
