@@ -2247,3 +2247,20 @@ body {
     transition: none;
   }
 }
+
+
+/* Collapsible sidebar groups */
+.app-sidebar-nav { display: grid; gap: 12px; }
+.app-sidebar-group { min-width: 0; }
+.app-sidebar-group-toggle {
+  width: 100%; min-height: 38px; padding: 0 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 0; border-radius: 7px; color: #7b887e; background: transparent;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.15px; text-align: left;
+  cursor: pointer; transition: color .16s ease, background .16s ease;
+}
+.app-sidebar-group-toggle:hover { color: #315f40; background: #f0f5f0; }
+.app-sidebar-group-toggle svg { width: 15px; height: 15px; flex: 0 0 auto; transition: transform .18s ease; }
+.app-sidebar-group.is-open .app-sidebar-group-toggle svg { transform: rotate(180deg); }
+.app-sidebar-group-links { display: grid; gap: 4px; padding: 2px 0 3px; }
+.app-sidebar-group-links .app-sidebar-link { margin-left: 4px; }
