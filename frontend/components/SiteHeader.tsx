@@ -26,6 +26,16 @@ const TABS = [
         ),
     },
     {
+        href: "/pdf-tools",
+        label: "PDF Toolkit",
+        icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 3.5h7l4 4v13H7z" />
+                <path d="M14 3.5v4h4M10 12h5M10 15.5h5" />
+            </svg>
+        ),
+    },
+    {
         href: "/compress-pdf",
         label: "Kompres PDF",
         icon: (
@@ -55,7 +65,7 @@ export default function SiteHeader() {
             <div className="app-sidebar-label">TOOLS</div>
             <nav aria-label="Tools" className="app-sidebar-nav">
                 {TABS.map((tab, index) => {
-                    const active = pathname === tab.href;
+                    const active = pathname === tab.href || (tab.href === "/pdf-tools" && pathname.startsWith("/pdf-tools/"));
                     return (
                         <Link
                             key={tab.href}
