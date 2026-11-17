@@ -53,6 +53,13 @@ const GROUPS = [
                 ),
             },
             {
+                href: "/pdf-tools/merge",
+                label: "Merge PDF",
+                icon: (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7zM14 3.5v4h4M4 9v11h11M10 13h6m-3-3 3 3-3 3" /></svg>
+                ),
+            },
+            {
                 href: "/compress-pdf",
                 label: "Compress PDF",
                 icon: (
