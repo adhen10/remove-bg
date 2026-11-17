@@ -1337,7 +1337,37 @@ body {
   font-weight: 800;
   letter-spacing: 1.4px;
 }
-.app-sidebar-nav { display: grid; gap: 4px; }
+.app-sidebar-nav { display: grid; gap: 10px; }
+.app-sidebar-group { display: grid; gap: 3px; }
+.app-sidebar-group-toggle {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #8a968d;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.15px;
+}
+.app-sidebar-group-toggle:hover { color: #345b40; background: #eef2ed; }
+.app-sidebar-group-toggle svg {
+  display: block;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  transition: transform .18s ease;
+}
+.app-sidebar-group.is-open .app-sidebar-group-toggle svg { transform: rotate(180deg); }
+.app-sidebar-group-links { display: grid; gap: 3px; }
 .app-sidebar-link {
   min-height: 42px;
   display: flex;
