@@ -127,9 +127,9 @@ def preview_pdf_pages(data: bytes) -> list[dict[str, int | str]]:
     try:
         for index, page in enumerate(source):
             rect = page.rect
-            scale = min(0.32, 112 / max(rect.width, rect.height))
+            scale = min(0.26, 96 / max(rect.width, rect.height))
             pixmap = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), colorspace=pymupdf.csRGB, alpha=False)
-            image = pixmap.tobytes("jpeg", jpg_quality=48)
+            image = pixmap.tobytes("jpeg", jpg_quality=38)
             pages.append({
                 "page_number": index + 1,
                 "width": pixmap.width,
