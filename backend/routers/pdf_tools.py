@@ -10,6 +10,7 @@ from services.pdf_tools import (
     get_pdf_tool_catalog,
     merge_pdf_bytes,
     split_pdf_pages,
+    rotate_pdf_pages,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,6 +69,31 @@ async def merge_pdfs(files: list[UploadFile] = File(...)):
     except Exception as exc:
         logger.exception("PDF merge failed.")
         raise HTTPException(status_code=500, detail="Gagal menggabungkan PDF. Silakan coba lagi.") from exc
+    finally:
+        _pdf_slots.release()
+
+
+@router.post("/rotate")
+async def rotate_pdf(
+    file: UploadFile = File(...),
+    rotation: int = Form(90),
+    pages: str = Form(""),
+):
+    if not _pdf_slots.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="Server sedang sibuk, coba lagi sebentar lagi.")
+    try:
+        data = await _read_pdf_upload(file)
+        output = rotate_pdf_pages(data, rotation, pages)
+        return Response(
+            content=output,
+            media_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="rotated-document.pdf"'},
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("PDF rotation failed.")
+        raise HTTPException(status_code=500, detail="Gagal memutar PDF. Silakan coba lagi.") from exc
     finally:
         _pdf_slots.release()
 
