@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 
 const TOOLS = [
     { number: "01", title: "Merge PDF", description: "Gabungkan beberapa dokumen PDF menjadi satu file.", href: "/pdf-tools/merge", available: true },
-    { number: "02", title: "Split & Extract PDF", description: "Pisahkan dokumen atau ambil halaman yang dibutuhkan." },
+    { number: "02", title: "Split & Extract PDF", description: "Pisahkan dokumen atau ambil halaman yang dibutuhkan.", href: "/pdf-tools/split", available: true },
     { number: "03", title: "Rotate PDF", description: "Putar seluruh dokumen atau halaman tertentu." },
     { number: "04", title: "Organize PDF", description: "Atur urutan halaman dan hapus halaman yang tidak diperlukan." },
     { number: "05", title: "Page Number", description: "Tambahkan nomor halaman dengan posisi dan format yang dapat diatur." },
