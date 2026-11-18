@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 type Mode = "extract" | "split";
@@ -39,7 +38,7 @@ export default function SplitPdfPage() {
  return <main className="workspace-shell">
   <SiteHeader/>
   <div className="workspace-main">
-   <header className="tool-topbar"><div><button type="button" onClick={() => router.back()} className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[#dce6dc] bg-white px-3 py-2 text-sm font-semibold text-[#486451] shadow-sm hover:bg-[#f4f8f4]"><span aria-hidden="true">←</span>Kembali</button><h1 className="tool-topbar-title mt-2">Split & Extract PDF</h1></div></header>
+   <header className="tool-topbar"><div><h1 className="tool-topbar-title">Split & Extract PDF</h1></div></header>
    <section className="workspace-panel">
     <div className="panel-heading"><div><h2 className="panel-title">Pisahkan dokumen PDF</h2><p className="mt-1 text-sm text-[#879189]">Ekstrak halaman pilihan atau pisahkan setiap halaman menjadi file tersendiri.</p></div></div>
     <button type="button" onClick={()=>inputRef.current?.click()} onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)} onDrop={e=>{e.preventDefault();setDragging(false);chooseFile(e.dataTransfer.files[0]);}} className={`w-full rounded-xl border border-dashed p-8 text-center transition ${dragging?"border-[#4c8a5d] bg-[#f0f7f0]":"border-[#cbd9cc] bg-[#fbfdfb] hover:border-[#7fa989]"}`}>
