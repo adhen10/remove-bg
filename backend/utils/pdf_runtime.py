@@ -38,3 +38,7 @@ def read_pdf_file(uploaded) -> bytes:
             detail=f"Ukuran file terlalu besar. Maksimal {MAX_PDF_BYTES // (1024 * 1024)} MB.",
         )
     return data
+
+
+def release_pdf_slot() -> None:
+    PDF_PROCESSING_SLOTS.release()
