@@ -14,6 +14,7 @@ from services.pdf_tools import (
     rotate_pdf_pages,
     preview_pdf_pages,
     organize_pdf_pages,
+    add_pdf_page_numbers,
 )
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,32 @@ async def organize_pdf(file: UploadFile = File(...), page_order: str = Form(...)
     except Exception as exc:
         logger.exception("PDF organization failed.")
         raise HTTPException(status_code=500, detail="Gagal mengatur halaman PDF.") from exc
+    finally:
+        _pdf_slots.release()
+
+
+@router.post("/page-number")
+async def number_pdf_pages(
+    file: UploadFile = File(...),
+    position: str = Form("bottom-center"),
+    format_type: str = Form("number"),
+    start_number: int = Form(1),
+    start_page: int = Form(1),
+    font_size: int = Form(10),
+    margin: int = Form(28),
+):
+    if not _pdf_slots.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="Server sedang sibuk, coba lagi sebentar lagi.")
+    try:
+        data = await _read_pdf_upload(file)
+        output = add_pdf_page_numbers(data, position, format_type, start_number, start_page, font_size, margin)
+        return Response(content=output, media_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="numbered-document.pdf"'})
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("PDF page numbering failed.")
+        raise HTTPException(status_code=500, detail="Gagal menambahkan nomor halaman.") from exc
     finally:
         _pdf_slots.release()
 
