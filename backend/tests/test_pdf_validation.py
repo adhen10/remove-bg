@@ -14,6 +14,7 @@ from services.pdf_tools import (
     rotate_pdf_pages,
     preview_pdf_pages,
     organize_pdf_pages,
+    add_pdf_page_numbers,
 )
 from utils.pdf_validation import open_validated_pdf
 
@@ -144,6 +145,34 @@ class PdfValidationTests(unittest.TestCase):
         previews = preview_pdf_pages(make_pdf(3))
         self.assertEqual(len(previews), 3)
         self.assertTrue(previews[0]["thumbnail"].startswith("data:image/jpeg;base64,"))
+
+    def test_add_page_numbers_to_all_pages(self):
+        result = add_pdf_page_numbers(make_pdf(3), position="bottom-center")
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertIn("1", document[0].get_text())
+            self.assertIn("2", document[1].get_text())
+            self.assertIn("3", document[2].get_text())
+        finally:
+            document.close()
+
+    def test_page_numbering_can_start_later_and_custom_number(self):
+        result = add_pdf_page_numbers(make_pdf(4), start_number=5, start_page=3)
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertNotIn("5", document[0].get_text())
+            self.assertIn("5", document[2].get_text())
+            self.assertIn("6", document[3].get_text())
+        finally:
+            document.close()
+
+    def test_page_numbering_rejects_invalid_position(self):
+        with self.assertRaises(HTTPException):
+            add_pdf_page_numbers(make_pdf(), position="center")
+
+    def test_page_numbering_rejects_start_page_out_of_range(self):
+        with self.assertRaises(HTTPException):
+            add_pdf_page_numbers(make_pdf(2), start_page=3)
 
     def test_split_creates_one_pdf_per_page(self):
         result = split_pdf_pages(make_pdf(3))
