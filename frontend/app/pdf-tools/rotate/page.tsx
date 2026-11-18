@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -9,7 +8,6 @@ type PreviewPage = { page_number: number; thumbnail: string; width: number; heig
 function formatSize(bytes: number) { return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(2)} MB`; }
 
 export default function RotatePdfPage() {
-    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<PreviewPage[]>([]);
@@ -66,10 +64,7 @@ export default function RotatePdfPage() {
         <SiteHeader />
         <div className="workspace-main">
             <header className="tool-topbar">
-                <button type="button" onClick={() => router.back()} className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[#dce6dc] bg-white px-3 py-2 text-sm font-semibold text-[#486451] shadow-sm hover:bg-[#f4f8f4]" aria-label="Kembali ke halaman sebelumnya">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6M9 12h11"/></svg>
-                    Kembali
-                </button>
+                
                 <h1 className="tool-topbar-title">Rotate PDF</h1>
             </header>
             <section className="workspace-panel">
