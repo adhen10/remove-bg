@@ -32,7 +32,7 @@ def parse_page_ranges(value: str, page_count: int) -> list[int]:
     pages: list[int] = []
     seen: set[int] = set()
     for part in value.split(","):
-        match = re.fullmatch(r"(\\d+)(?:\\s*-\\s*(\\d+))?", part.strip())
+        match = re.fullmatch(r"(\d+)(?:\s*-\s*(\d+))?", part.strip())
         if not match:
             raise HTTPException(status_code=400, detail="Format halaman tidak valid. Gunakan contoh 1-3,5,8-10.")
         start, end = int(match.group(1)), int(match.group(2) or match.group(1))
