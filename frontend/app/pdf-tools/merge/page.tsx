@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 
 type PdfFile = { id: string; file: File };
@@ -14,7 +13,6 @@ function formatSize(bytes: number) {
 }
 
 export default function MergePdfPage() {
-    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [files, setFiles] = useState<PdfFile[]>([]);
     const [dragging, setDragging] = useState(false);
@@ -90,7 +88,7 @@ export default function MergePdfPage() {
             <SiteHeader />
             <div className="workspace-main">
                 <header className="tool-topbar">
-                    <div><button type="button" onClick={() => router.back()} className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[#dce6dc] bg-white px-3 py-2 text-sm font-semibold text-[#486451] shadow-sm hover:bg-[#f4f8f4]"><span aria-hidden="true">←</span>Kembali</button><h1 className="tool-topbar-title mt-2">Merge PDF</h1></div>
+                    <div><h1 className="tool-topbar-title">Merge PDF</h1></div>
                 </header>
                 <section className="workspace-panel">
                     <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2><p className="mt-1 text-sm text-[#879189]">Pilih beberapa PDF, lalu atur urutannya sebelum digabungkan.</p></div></div>
