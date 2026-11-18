@@ -20,6 +20,13 @@ export default function OrganizePdfPage() {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [addNumbers, setAddNumbers] = useState(false);
+    const [numberPosition, setNumberPosition] = useState("bottom-center");
+    const [numberFormat, setNumberFormat] = useState("number");
+    const [startNumber, setStartNumber] = useState("1");
+    const [startPage, setStartPage] = useState("1");
+    const [fontSize, setFontSize] = useState("10");
+    const [margin, setMargin] = useState("28");
 
     async function chooseFile(candidate?: File) {
         if (!candidate) return;
@@ -53,15 +60,17 @@ export default function OrganizePdfPage() {
         }
     }
 
-    function movePage(pageNumber: number, direction: -1 | 1) {
+    function movePageToPosition(pageNumber: number, position: number) {
+        if (!Number.isInteger(position) || position < 1 || position > order.length) return;
         setOrder((current) => {
-            const index = current.indexOf(pageNumber);
-            const target = index + direction;
-            if (index < 0 || target < 0 || target >= current.length) return current;
+            const from = current.indexOf(pageNumber);
+            if (from < 0) return current;
             const next = [...current];
-            [next[index], next[target]] = [next[target], next[index]];
+            next.splice(from, 1);
+            next.splice(position - 1, 0, pageNumber);
             return next;
         });
+        setError(""); setSuccess("");
     }
 
     function removePage(pageNumber: number) {
@@ -80,6 +89,12 @@ export default function OrganizePdfPage() {
             const form = new FormData();
             form.append("file", file);
             form.append("page_order", JSON.stringify(order));
+            form.append("add_numbers", String(addNumbers));
+            if (addNumbers) {
+                form.append("position", numberPosition); form.append("format_type", numberFormat);
+                form.append("start_number", startNumber); form.append("start_page", startPage);
+                form.append("font_size", fontSize); form.append("margin", margin);
+            }
             const response = await fetch(`${API_URL}/pdf-tools/organize`, { method: "POST", body: form });
             if (!response.ok) {
                 const body = await response.json().catch(() => null);
@@ -118,7 +133,7 @@ export default function OrganizePdfPage() {
                     <div className="panel-heading">
                         <div>
                             <h2 className="panel-title">Atur halaman dokumen</h2>
-                            <p className="mt-1 text-sm text-[#879189]">Ubah urutan halaman atau hapus halaman yang tidak diperlukan.</p>
+                            <p className="mt-1 text-sm text-[#879189]">Atur posisi halaman dengan nomor, hapus halaman yang tidak diperlukan, dan tambahkan nomor halaman dalam satu proses.</p>
                         </div>
                     </div>
 
@@ -149,7 +164,7 @@ export default function OrganizePdfPage() {
                     {previews.length > 0 && !loading && (
                         <div className="mt-6">
                             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                                <div><h3 className="text-sm font-semibold text-[#34463a]">Susunan halaman</h3><p className="mt-1 text-xs text-[#879189]">Gunakan panah untuk mengubah urutan. Hapus halaman yang tidak dibutuhkan.</p></div>
+                                <div><h3 className="text-sm font-semibold text-[#34463a]">Susunan halaman</h3><p className="mt-1 text-xs text-[#879189]">Masukkan nomor posisi baru pada setiap halaman. Halaman lain akan menyesuaikan otomatis.</p></div>
                                 <div className="flex items-center gap-3 text-xs text-[#718076]"><span>{order.length} dari {previews.length} halaman</span><button type="button" onClick={() => { setOrder(previews.map((page) => page.page_number)); setError(""); setSuccess(""); }} className="font-semibold text-[#397653]">Reset urutan</button></div>
                             </div>
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -165,12 +180,11 @@ export default function OrganizePdfPage() {
                                             <div className="flex h-44 items-center justify-center bg-[#f5f7f5] p-2">
                                                 <img src={preview.thumbnail} alt={`Preview halaman ${pageNumber}`} className="max-h-full max-w-full object-contain shadow-sm" />
                                             </div>
-                                            <div className="flex items-center justify-between gap-1 border-t border-[#edf1ed] p-2">
-                                                <div className="flex gap-1">
-                                                    <button type="button" aria-label={`Geser halaman ${pageNumber} ke kiri`} onClick={() => movePage(pageNumber, -1)} disabled={index === 0} className="rounded-md border border-[#e4eae4] px-2.5 py-1.5 text-xs text-[#526457] disabled:opacity-30">←</button>
-                                                    <button type="button" aria-label={`Geser halaman ${pageNumber} ke kanan`} onClick={() => movePage(pageNumber, 1)} disabled={index === order.length - 1} className="rounded-md border border-[#e4eae4] px-2.5 py-1.5 text-xs text-[#526457] disabled:opacity-30">→</button>
-                                                </div>
-                                                <button type="button" onClick={() => removePage(pageNumber)} disabled={order.length === 1} className="rounded-md px-2 py-1.5 text-[11px] font-medium text-[#a34e45] hover:bg-[#fff4f2] disabled:opacity-30">Hapus</button>
+                                            <div className="flex items-center justify-between gap-2 border-t border-[#edf1ed] p-2">
+                                                <label className="flex items-center gap-2 text-[11px] text-[#718076]">Posisi
+                                                    <input type="number" min="1" max={order.length} value={index + 1} onChange={(event) => movePageToPosition(pageNumber, Number(event.target.value))} className="w-16 rounded-md border border-[#dce5dc] px-2 py-1.5 text-xs font-semibold text-[#34463a] outline-none focus:border-[#78a585]" aria-label={`Posisi baru halaman ${pageNumber}`} />
+                                                </label>
+                                                <button type="button" onClick={() => removePage(pageNumber)} disabled={order.length === 1} className="rounded-md border border-[#f0d9d6] px-3 py-1.5 text-[11px] font-semibold text-[#a34e45] hover:bg-[#fff4f2] disabled:opacity-30">Hapus</button>
                                             </div>
                                         </article>
                                     );
@@ -180,6 +194,22 @@ export default function OrganizePdfPage() {
                         </div>
                     )}
 
+                    {previews.length > 0 && !loading && (
+                        <section className="mt-6 rounded-xl border border-[#e1e9e1] bg-[#fbfdfb] p-4">
+                            <label className="flex cursor-pointer items-center gap-3">
+                                <input type="checkbox" checked={addNumbers} onChange={(event) => setAddNumbers(event.target.checked)} className="h-4 w-4 accent-[#347653]" />
+                                <span><strong className="block text-sm text-[#34463a]">Tambahkan nomor halaman</strong><small className="text-xs text-[#879189]">Nomor halaman diterapkan setelah urutan dan penghapusan selesai.</small></span>
+                            </label>
+                            {addNumbers && <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <label className="text-xs font-semibold text-[#405247]">Posisi nomor<select value={numberPosition} onChange={e=>setNumberPosition(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] bg-white px-3 py-2.5 text-sm">{[["top-left","Atas kiri"],["top-center","Atas tengah"],["top-right","Atas kanan"],["bottom-left","Bawah kiri"],["bottom-center","Bawah tengah"],["bottom-right","Bawah kanan"]].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+                                <label className="text-xs font-semibold text-[#405247]">Format nomor<select value={numberFormat} onChange={e=>setNumberFormat(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] bg-white px-3 py-2.5 text-sm"><option value="number">1, 2, 3</option><option value="page-of">Page 1 of 10</option></select></label>
+                                <label className="text-xs font-semibold text-[#405247]">Mulai dari nomor<input type="number" min="1" max="999999" value={startNumber} onChange={e=>setStartNumber(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] px-3 py-2.5 text-sm"/></label>
+                                <label className="text-xs font-semibold text-[#405247]">Mulai pada halaman ke-<input type="number" min="1" max={order.length} value={startPage} onChange={e=>setStartPage(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] px-3 py-2.5 text-sm"/></label>
+                                <label className="text-xs font-semibold text-[#405247]">Ukuran teks (6–24 pt)<input type="number" min="6" max="24" value={fontSize} onChange={e=>setFontSize(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] px-3 py-2.5 text-sm"/></label>
+                                <label className="text-xs font-semibold text-[#405247]">Jarak dari tepi (10–100 pt)<input type="number" min="10" max="100" value={margin} onChange={e=>setMargin(e.target.value)} className="mt-2 w-full rounded-lg border border-[#dce5dc] px-3 py-2.5 text-sm"/></label>
+                            </div>}
+                        </section>
+                    )}
                     {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff4f2] p-3 text-xs text-[#a34e45]">{error}</p>}
                     {success && <p role="status" className="mt-4 rounded-lg bg-[#eff7ef] p-3 text-xs text-[#397653]">{success}</p>}
 
