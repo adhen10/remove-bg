@@ -18,7 +18,6 @@ const GROUPS = [
         id: "pdf",
         label: "PDF TOOLKIT",
         items: [
-            { href: "/pdf-tools", label: "PDF Toolkit", icon: "pdf" },
             { href: "/pdf-tools/merge", label: "Merge PDF", icon: "merge" },
             { href: "/pdf-tools/split", label: "Split & Extract PDF", icon: "split" },
             { href: "/pdf-tools/rotate", label: "Rotate PDF", icon: "rotate" },
