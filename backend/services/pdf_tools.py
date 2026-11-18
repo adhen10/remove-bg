@@ -17,7 +17,6 @@ PDF_TOOL_CATALOG = [
     {"id": "split", "name": "Split & Extract PDF", "description": "Pisahkan PDF per halaman atau ambil halaman tertentu.", "available": True, "href": "/pdf-tools/split"},
     {"id": "rotate", "name": "Rotate PDF", "description": "Putar halaman PDF sesuai orientasi yang dibutuhkan.", "available": True, "href": "/pdf-tools/rotate"},
     {"id": "organize", "name": "Organize PDF", "description": "Atur urutan halaman dan hapus halaman yang tidak diperlukan.", "available": True, "href": "/pdf-tools/organize"},
-    {"id": "page-number", "name": "Page Number", "description": "Tambahkan nomor halaman pada dokumen PDF.", "available": True, "href": "/pdf-tools/page-number"},
     {"id": "compress", "name": "Compress PDF", "description": "Kurangi ukuran file PDF.", "available": True, "href": "/compress-pdf"},
 ]
 
