@@ -1,10 +1,17 @@
+import io
 import unittest
+import zipfile
 
 import pymupdf
 from fastapi import HTTPException
 
 from services.pdf_compressor import compress_pdf_bytes
-from services.pdf_tools import merge_pdf_bytes
+from services.pdf_tools import (
+    extract_pdf_pages,
+    merge_pdf_bytes,
+    parse_page_ranges,
+    split_pdf_pages,
+)
 from utils.pdf_validation import open_validated_pdf
 
 
@@ -61,6 +68,38 @@ class PdfValidationTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as context:
             merge_pdf_bytes([make_pdf(), b"not a PDF"])
         self.assertEqual(context.exception.status_code, 400)
+
+    def test_parse_page_ranges_supports_ranges_and_order(self):
+        self.assertEqual(parse_page_ranges("3,1-2", 4), [2, 0, 1])
+
+    def test_parse_page_ranges_rejects_out_of_range(self):
+        with self.assertRaises(HTTPException):
+            parse_page_ranges("1-5", 4)
+
+    def test_parse_page_ranges_rejects_duplicates(self):
+        with self.assertRaises(HTTPException):
+            parse_page_ranges("1-2,2", 4)
+
+    def test_extract_selected_pages(self):
+        result = extract_pdf_pages(make_pdf(4), "2,4")
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertEqual(document.page_count, 2)
+            self.assertIn("page-2", document[0].get_text())
+            self.assertIn("page-4", document[1].get_text())
+        finally:
+            document.close()
+
+    def test_split_creates_one_pdf_per_page(self):
+        result = split_pdf_pages(make_pdf(3))
+        with zipfile.ZipFile(io.BytesIO(result)) as archive:
+            self.assertEqual(archive.namelist(), ["page-001.pdf", "page-002.pdf", "page-003.pdf"])
+            for name in archive.namelist():
+                document = pymupdf.open(stream=archive.read(name), filetype="pdf")
+                try:
+                    self.assertEqual(document.page_count, 1)
+                finally:
+                    document.close()
 
 
 if __name__ == "__main__":
