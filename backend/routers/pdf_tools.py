@@ -1,3 +1,4 @@
+import json
 import logging
 import threading
 
@@ -11,6 +12,8 @@ from services.pdf_tools import (
     merge_pdf_bytes,
     split_pdf_pages,
     rotate_pdf_pages,
+    preview_pdf_pages,
+    organize_pdf_pages,
 )
 
 logger = logging.getLogger(__name__)
@@ -94,6 +97,47 @@ async def rotate_pdf(
     except Exception as exc:
         logger.exception("PDF rotation failed.")
         raise HTTPException(status_code=500, detail="Gagal memutar PDF. Silakan coba lagi.") from exc
+    finally:
+        _pdf_slots.release()
+
+
+
+@router.post("/organize/preview")
+async def preview_organize_pdf(file: UploadFile = File(...)):
+    if not _pdf_slots.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="Server sedang sibuk, coba lagi sebentar lagi.")
+    try:
+        data = await _read_pdf_upload(file)
+        return {"pages": preview_pdf_pages(data)}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("PDF preview failed.")
+        raise HTTPException(status_code=500, detail="Gagal membuat preview PDF.") from exc
+    finally:
+        _pdf_slots.release()
+
+
+@router.post("/organize")
+async def organize_pdf(file: UploadFile = File(...), page_order: str = Form(...)):
+    if not _pdf_slots.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="Server sedang sibuk, coba lagi sebentar lagi.")
+    try:
+        data = await _read_pdf_upload(file)
+        try:
+            order = json.loads(page_order)
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail="Urutan halaman tidak valid.") from exc
+        if not isinstance(order, list):
+            raise HTTPException(status_code=400, detail="Urutan halaman harus berupa daftar nomor halaman.")
+        output = organize_pdf_pages(data, order)
+        return Response(content=output, media_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="organized-document.pdf"'})
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("PDF organization failed.")
+        raise HTTPException(status_code=500, detail="Gagal mengatur halaman PDF.") from exc
     finally:
         _pdf_slots.release()
 
