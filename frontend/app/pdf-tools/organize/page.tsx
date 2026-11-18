@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -12,7 +11,6 @@ function formatSize(bytes: number) {
 }
 
 export default function OrganizePdfPage() {
-    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
     const [previews, setPreviews] = useState<PreviewPage[]>([]);
@@ -112,8 +110,8 @@ export default function OrganizePdfPage() {
             <div className="workspace-main">
                 <header className="tool-topbar">
                     <div>
-                        <button type="button" onClick={() => router.back()} className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[#dce6dc] bg-white px-3 py-2 text-sm font-semibold text-[#486451] shadow-sm hover:bg-[#f4f8f4]"><span aria-hidden="true">←</span>Kembali</button>
-                        <h1 className="tool-topbar-title mt-2">Organize PDF</h1>
+                        
+                        <h1 className="tool-topbar-title">Organize PDF</h1>
                     </div>
                 </header>
                 <section className="workspace-panel">
