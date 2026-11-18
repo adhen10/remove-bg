@@ -22,7 +22,7 @@ const GROUPS = [
             { href: "/pdf-tools/merge", label: "Merge PDF", icon: "merge" },
             { href: "/pdf-tools/split", label: "Split & Extract PDF", icon: "split" },
             { href: "/pdf-tools/rotate", label: "Rotate PDF", icon: "rotate" },
-            { href: "/pdf-tools#organize-pdf", label: "Organize PDF", icon: "organize" },
+            { href: "/pdf-tools/organize", label: "Organize PDF", icon: "organize" },
             { href: "/pdf-tools#page-number", label: "Page Number", icon: "number" },
             { href: "/compress-pdf", label: "Compress PDF", icon: "compress" },
         ],
