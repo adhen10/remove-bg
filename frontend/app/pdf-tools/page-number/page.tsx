@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -11,6 +11,7 @@ const positions = [
 ];
 
 export default function PageNumberPdfPage() {
+    const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [file, setFile] = useState<File | null>(null);
     const [position, setPosition] = useState("bottom-center");
@@ -58,7 +59,7 @@ export default function PageNumberPdfPage() {
             <SiteHeader />
             <div className="workspace-main">
                 <header className="tool-topbar">
-                    <div><Link href="/pdf-tools" className="text-xs text-[#718076] hover:text-[#347653]">← PDF Toolkit</Link><h1 className="tool-topbar-title mt-2">Page Number</h1></div>
+                    <div><button type="button" onClick={() => router.back()} className="mb-2 inline-flex items-center gap-2 rounded-lg border border-[#dce6dc] bg-white px-3 py-2 text-sm font-semibold text-[#486451] shadow-sm hover:bg-[#f4f8f4]"><span aria-hidden="true">←</span>Kembali</button><h1 className="tool-topbar-title mt-2">Page Number</h1></div>
                 </header>
                 <section className="workspace-panel">
                     <div className="panel-heading"><div><h2 className="panel-title">Tambahkan nomor halaman</h2><p className="mt-1 text-sm text-[#879189]">Atur posisi, format, dan awal penomoran dokumen.</p></div></div>
