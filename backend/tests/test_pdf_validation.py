@@ -137,6 +137,10 @@ class PdfValidationTests(unittest.TestCase):
         with self.assertRaises(HTTPException):
             organize_pdf_pages(make_pdf(2), [1, 1])
 
+    def test_organize_rejects_boolean_page_number(self):
+        with self.assertRaises(HTTPException):
+            organize_pdf_pages(make_pdf(2), [True])
+
     def test_organize_rejects_out_of_range_page(self):
         with self.assertRaises(HTTPException):
             organize_pdf_pages(make_pdf(2), [1, 3])
