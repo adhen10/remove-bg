@@ -17,7 +17,7 @@ PDF_TOOL_CATALOG = [
     {"id": "split", "name": "Split & Extract PDF", "description": "Pisahkan PDF per halaman atau ambil halaman tertentu.", "available": True, "href": "/pdf-tools/split"},
     {"id": "rotate", "name": "Rotate PDF", "description": "Putar halaman PDF sesuai orientasi yang dibutuhkan.", "available": True, "href": "/pdf-tools/rotate"},
     {"id": "organize", "name": "Organize PDF", "description": "Atur urutan halaman dan hapus halaman yang tidak diperlukan.", "available": True, "href": "/pdf-tools/organize"},
-    {"id": "page-number", "name": "Page Number", "description": "Tambahkan nomor halaman pada dokumen PDF.", "available": False},
+    {"id": "page-number", "name": "Page Number", "description": "Tambahkan nomor halaman pada dokumen PDF.", "available": True, "href": "/pdf-tools/page-number"},
     {"id": "compress", "name": "Compress PDF", "description": "Kurangi ukuran file PDF.", "available": True, "href": "/compress-pdf"},
 ]
 
@@ -165,3 +165,51 @@ def organize_pdf_pages(data: bytes, page_order: list[int]) -> bytes:
     finally:
         source.close()
         output.close()
+
+
+def add_pdf_page_numbers(
+    data: bytes,
+    position: str = "bottom-center",
+    format_type: str = "number",
+    start_number: int = 1,
+    start_page: int = 1,
+    font_size: int = 10,
+    margin: int = 28,
+) -> bytes:
+    """Stamp page numbers onto pages from start_page, using 1-based numbering."""
+    if position not in {"top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"}:
+        raise HTTPException(status_code=400, detail="Posisi nomor halaman tidak valid.")
+    if format_type not in {"number", "page-of"}:
+        raise HTTPException(status_code=400, detail="Format nomor halaman tidak valid.")
+    if not 1 <= start_number <= 999999 or not 1 <= start_page <= MAX_PDF_PAGES:
+        raise HTTPException(status_code=400, detail="Nomor awal atau halaman awal tidak valid.")
+    if not 6 <= font_size <= 24 or not 10 <= margin <= 100:
+        raise HTTPException(status_code=400, detail="Ukuran teks atau margin berada di luar batas.")
+    document = open_validated_pdf(data)
+    try:
+        if start_page > document.page_count:
+            raise HTTPException(status_code=400, detail=f"Halaman awal melebihi jumlah halaman dokumen ({document.page_count}).")
+        for index in range(start_page - 1, document.page_count):
+            page = document[index]
+            label_number = start_number + (index - (start_page - 1))
+            text = str(label_number) if format_type == "number" else f"Page {label_number} of {start_number + document.page_count - start_page}"
+            rect = page.rect
+            y = margin + font_size if position.startswith("top") else rect.height - margin
+            if position.endswith("left"):
+                x = margin
+                align = 0
+            elif position.endswith("right"):
+                x = rect.width - margin
+                align = 2
+            else:
+                x = rect.width / 2
+                align = 1
+            page.insert_text((x, y), text, fontsize=font_size, fontname="helv", color=(0.25, 0.30, 0.26), overlay=True, align=align)
+        return document.tobytes(garbage=3, deflate=True)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Could not add PDF page numbers.")
+        raise HTTPException(status_code=400, detail="Nomor halaman tidak dapat ditambahkan.") from exc
+    finally:
+        document.close()
