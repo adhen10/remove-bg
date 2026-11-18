@@ -196,15 +196,16 @@ def add_pdf_page_numbers(
             rect = page.rect
             y = margin + font_size if position.startswith("top") else rect.height - margin
             if position.endswith("left"):
-                x = margin
-                align = 0
+                x0, x1, align = margin, rect.width / 2, 0
             elif position.endswith("right"):
-                x = rect.width - margin
-                align = 2
+                x0, x1, align = rect.width / 2, rect.width - margin, 2
             else:
-                x = rect.width / 2
-                align = 1
-            page.insert_text((x, y), text, fontsize=font_size, fontname="helv", color=(0.25, 0.30, 0.26), overlay=True, align=align)
+                x0, x1, align = margin, rect.width - margin, 1
+            if position.startswith("top"):
+                box = pymupdf.Rect(x0, margin, x1, margin + font_size * 2)
+            else:
+                box = pymupdf.Rect(x0, rect.height - margin - font_size * 2, x1, rect.height - margin)
+            page.insert_textbox(box, text, fontsize=font_size, fontname="helv", color=(0.25, 0.30, 0.26), overlay=True, align=align)
         return document.tobytes(garbage=3, deflate=True)
     except HTTPException:
         raise
