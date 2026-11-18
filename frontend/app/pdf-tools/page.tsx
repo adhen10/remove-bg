@@ -5,7 +5,7 @@ const TOOLS = [
     { number: "01", title: "Merge PDF", description: "Gabungkan beberapa dokumen PDF menjadi satu file.", href: "/pdf-tools/merge", available: true },
     { number: "02", title: "Split & Extract PDF", description: "Pisahkan dokumen atau ambil halaman yang dibutuhkan.", href: "/pdf-tools/split", available: true },
     { number: "03", title: "Rotate PDF", description: "Putar seluruh dokumen atau halaman tertentu.", href: "/pdf-tools/rotate", available: true },
-    { number: "04", title: "Organize PDF", description: "Atur urutan halaman dan hapus halaman yang tidak diperlukan." },
+    { number: "04", title: "Organize PDF", description: "Atur urutan halaman dan hapus halaman yang tidak diperlukan.", href: "/pdf-tools/organize", available: true },
     { number: "05", title: "Page Number", description: "Tambahkan nomor halaman dengan posisi dan format yang dapat diatur." },
     { number: "06", title: "Compress PDF", description: "Kurangi ukuran file PDF dengan beberapa tingkat kompresi.", href: "/compress-pdf", available: true },
 ];
