@@ -106,7 +106,17 @@ async def preview_organize_pdf(file: UploadFile = File(...)):
 
 
 @router.post("/organize")
-async def organize_pdf(file: UploadFile = File(...), page_order: str = Form(...)):
+async def organize_pdf(
+    file: UploadFile = File(...),
+    page_order: str = Form(...),
+    add_numbers: bool = Form(False),
+    position: str = Form("bottom-center"),
+    format_type: str = Form("number"),
+    start_number: int = Form(1),
+    start_page: int = Form(1),
+    font_size: int = Form(10),
+    margin: int = Form(28),
+):
     acquire_pdf_slot()
     try:
         data = await read_pdf_upload(file)
@@ -117,6 +127,8 @@ async def organize_pdf(file: UploadFile = File(...), page_order: str = Form(...)
         if not isinstance(order, list):
             raise HTTPException(status_code=400, detail="Urutan halaman harus berupa daftar nomor halaman.")
         output = organize_pdf_pages(data, order)
+        if add_numbers:
+            output = add_pdf_page_numbers(output, position, format_type, start_number, start_page, font_size, margin)
         return Response(content=output, media_type="application/pdf",
             headers={"Content-Disposition": 'attachment; filename="organized-document.pdf"'})
     except HTTPException:
