@@ -30,7 +30,8 @@ PDF_TOOL_CATALOG = [
         "id": "rotate",
         "name": "Rotate PDF",
         "description": "Putar halaman PDF sesuai orientasi yang dibutuhkan.",
-        "available": False,
+        "available": True,
+        "href": "/pdf-tools/rotate",
     },
     {
         "id": "organize",
@@ -152,5 +153,31 @@ def split_pdf_pages(data: bytes) -> bytes:
                 finally:
                     single_page.close()
         return archive_buffer.getvalue()
+    finally:
+        source.close()
+
+
+
+def rotate_pdf_pages(data: bytes, rotation: int, page_expression: str = "") -> bytes:
+    """Rotate all pages or a selected 1-based page range by a quarter-turn."""
+    if rotation not in {90, 180, 270}:
+        raise HTTPException(status_code=400, detail="Rotasi harus 90, 180, atau 270 derajat.")
+
+    source = open_validated_pdf(data)
+    try:
+        selected = (
+            set(parse_page_ranges(page_expression, source.page_count))
+            if page_expression.strip()
+            else set(range(source.page_count))
+        )
+        for page_index in selected:
+            page = source[page_index]
+            page.set_rotation((page.rotation + rotation) % 360)
+        return source.tobytes(garbage=3, deflate=True)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Could not rotate PDF pages.")
+        raise HTTPException(status_code=400, detail="PDF tidak dapat diputar.") from exc
     finally:
         source.close()
