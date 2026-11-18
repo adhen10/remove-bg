@@ -150,7 +150,7 @@ def organize_pdf_pages(data: bytes, page_order: list[int]) -> bytes:
             raise HTTPException(status_code=400, detail="Dokumen harus memiliki minimal satu halaman.")
         if len(page_order) > source.page_count:
             raise HTTPException(status_code=400, detail="Urutan halaman tidak valid.")
-        if any(not isinstance(number, int) or number < 1 or number > source.page_count for number in page_order):
+        if any(type(number) is not int or number < 1 or number > source.page_count for number in page_order):
             raise HTTPException(status_code=400, detail="Nomor halaman tidak valid.")
         if len(set(page_order)) != len(page_order):
             raise HTTPException(status_code=400, detail="Halaman tidak boleh dipilih lebih dari satu kali.")
