@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 
 type PdfFile = { id: string; file: File };
@@ -89,7 +88,7 @@ export default function MergePdfPage() {
             <SiteHeader />
             <div className="workspace-main">
                 <header className="tool-topbar">
-                    <div><Link href="/pdf-tools" className="text-xs text-[#718076] hover:text-[#347653]">← PDF Toolkit</Link><h1 className="tool-topbar-title mt-2">Merge PDF</h1></div>
+                    <div><h1 className="tool-topbar-title">Merge PDF</h1></div>
                 </header>
                 <section className="workspace-panel">
                     <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2><p className="mt-1 text-sm text-[#879189]">Pilih beberapa PDF, lalu atur urutannya sebelum digabungkan.</p></div></div>
@@ -101,12 +100,12 @@ export default function MergePdfPage() {
                     </button>
                     <input ref={inputRef} type="file" accept="application/pdf,.pdf" multiple className="hidden" onChange={(event) => { if (event.target.files) addFiles(event.target.files); event.target.value = ""; }} />
 
-                    <div className="mt-6 flex items-center justify-between gap-3"><h3 className="text-sm font-semibold text-[#34463a]">Urutan dokumen <span className="text-[#8b988e]">({files.length})</span></h3><button type="button" onClick={() => { setFiles([]); setError(""); setSuccess(""); }} disabled={!files.length || busy} className="text-xs font-medium text-[#89958c] hover:text-[#a34e45] disabled:opacity-40">Hapus semua</button></div>
+                    <div className="mt-6 flex items-center justify-between gap-3"><h3 className="text-sm font-semibold text-[#34463a]">Urutan dokumen <span className="text-[#8b988e]">({files.length})</span></h3><button type="button" onClick={() => { setFiles([]); setError(""); setSuccess(""); }} disabled={!files.length || busy} className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#f0d9d6] bg-white px-3 text-xs font-semibold text-[#a34e45] hover:bg-[#fff7f6] disabled:opacity-40"><span aria-hidden="true">▤</span>Hapus semua</button></div>
                     {files.length ? <ol className="mt-3 grid gap-2">
                         {files.map(({ id, file }, index) => <li key={id} className="flex items-center gap-3 rounded-lg border border-[#e5ebe5] bg-white p-3">
                             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#f0f5f0] text-xs font-bold text-[#588064]">{index + 1}</span>
                             <span className="min-w-0 flex-1"><strong className="block truncate text-xs text-[#405247]">{file.name}</strong><small className="text-[10px] text-[#929b94]">{formatSize(file.size)}</small></span>
-                            <div className="flex items-center gap-1"><button type="button" aria-label="Naikkan urutan" title="Naikkan" onClick={() => moveFile(index, -1)} disabled={index === 0 || busy} className="rounded border px-2 py-1 text-xs disabled:opacity-30">↑</button><button type="button" aria-label="Turunkan urutan" title="Turunkan" onClick={() => moveFile(index, 1)} disabled={index === files.length - 1 || busy} className="rounded border px-2 py-1 text-xs disabled:opacity-30">↓</button><button type="button" aria-label="Hapus file" title="Hapus" onClick={() => setFiles((current) => current.filter((item) => item.id !== id))} disabled={busy} className="rounded border px-2 py-1 text-xs text-[#a34e45] disabled:opacity-30">×</button></div>
+                            <div className="flex items-center gap-1"><button type="button" aria-label="Naikkan urutan" title="Naikkan" onClick={() => moveFile(index, -1)} disabled={index === 0 || busy} className="rounded border px-2 py-1 text-xs disabled:opacity-30">↑</button><button type="button" aria-label="Turunkan urutan" title="Turunkan" onClick={() => moveFile(index, 1)} disabled={index === files.length - 1 || busy} className="rounded border px-2 py-1 text-xs disabled:opacity-30">↓</button><button type="button" aria-label="Hapus file" title="Hapus" onClick={() => setFiles((current) => current.filter((item) => item.id !== id))} disabled={busy} className="inline-flex h-8 items-center gap-1 rounded-md border border-[#f0d9d6] px-2 text-[11px] font-semibold text-[#a34e45] hover:bg-[#fff7f6] disabled:opacity-30">Hapus</button></div>
                         </li>)}
                     </ol> : <div className="mt-3 rounded-lg border border-dashed border-[#e4e8e3] py-10 text-center text-xs text-[#9aa39c]">Belum ada dokumen dipilih.</div>}
 
