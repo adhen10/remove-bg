@@ -11,6 +11,7 @@ from services.pdf_tools import (
     merge_pdf_bytes,
     parse_page_ranges,
     split_pdf_pages,
+    rotate_pdf_pages,
 )
 from utils.pdf_validation import open_validated_pdf
 
@@ -89,6 +90,30 @@ class PdfValidationTests(unittest.TestCase):
             self.assertIn("page-4", document[1].get_text())
         finally:
             document.close()
+
+    def test_rotate_all_pages_by_90_degrees(self):
+        result = rotate_pdf_pages(make_pdf(2), 90)
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertEqual([page.rotation for page in document], [90, 90])
+        finally:
+            document.close()
+
+    def test_rotate_only_selected_pages(self):
+        result = rotate_pdf_pages(make_pdf(3), 180, "2")
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertEqual([page.rotation for page in document], [0, 180, 0])
+        finally:
+            document.close()
+
+    def test_rotate_rejects_invalid_angle(self):
+        with self.assertRaises(HTTPException):
+            rotate_pdf_pages(make_pdf(), 45)
+
+    def test_rotate_rejects_invalid_page_expression(self):
+        with self.assertRaises(HTTPException):
+            rotate_pdf_pages(make_pdf(2), 90, "3")
 
     def test_split_creates_one_pdf_per_page(self):
         result = split_pdf_pages(make_pdf(3))
