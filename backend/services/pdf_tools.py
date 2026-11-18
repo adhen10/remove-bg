@@ -1,4 +1,7 @@
+import io
 import logging
+import re
+import zipfile
 
 import pymupdf
 from fastapi import HTTPException
@@ -19,8 +22,9 @@ PDF_TOOL_CATALOG = [
     {
         "id": "split",
         "name": "Split & Extract PDF",
-        "description": "Pisahkan dokumen atau ambil halaman tertentu.",
-        "available": False,
+        "description": "Pisahkan PDF per halaman atau ambil halaman tertentu.",
+        "available": True,
+        "href": "/pdf-tools/split",
     },
     {
         "id": "rotate",
@@ -55,6 +59,36 @@ def get_pdf_tool_catalog() -> list[dict[str, str | bool]]:
     return PDF_TOOL_CATALOG
 
 
+def parse_page_ranges(value: str, page_count: int) -> list[int]:
+    """Parse 1-based page expressions such as '1-3,5' into zero-based indexes."""
+    if not value or not value.strip():
+        raise HTTPException(status_code=400, detail="Masukkan nomor halaman yang ingin diekstrak.")
+
+    pages: list[int] = []
+    seen: set[int] = set()
+    for part in value.split(","):
+        token = part.strip()
+        match = re.fullmatch(r"(\d+)(?:\s*-\s*(\d+))?", token)
+        if not match:
+            raise HTTPException(status_code=400, detail="Format halaman tidak valid. Gunakan contoh 1-3,5,8-10.")
+
+        start = int(match.group(1))
+        end = int(match.group(2) or start)
+        if start < 1 or end < start or end > page_count:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Rentang halaman harus berada antara 1 sampai {page_count}.",
+            )
+
+        for page_number in range(start, end + 1):
+            if page_number in seen:
+                raise HTTPException(status_code=400, detail="Nomor halaman tidak boleh berulang.")
+            seen.add(page_number)
+            pages.append(page_number - 1)
+
+    return pages
+
+
 def merge_pdf_bytes(files: list[bytes]) -> bytes:
     """Merge validated PDF payloads in the order provided."""
     if len(files) < 2:
@@ -85,3 +119,38 @@ def merge_pdf_bytes(files: list[bytes]) -> bytes:
         merged.close()
         for document in documents:
             document.close()
+
+
+def extract_pdf_pages(data: bytes, page_expression: str) -> bytes:
+    """Create one PDF containing the selected pages in the requested order."""
+    source = open_validated_pdf(data)
+    output = pymupdf.open()
+    try:
+        selected = parse_page_ranges(page_expression, source.page_count)
+        for page_index in selected:
+            output.insert_pdf(source, from_page=page_index, to_page=page_index)
+        return output.tobytes(garbage=3, deflate=True)
+    finally:
+        source.close()
+        output.close()
+
+
+def split_pdf_pages(data: bytes) -> bytes:
+    """Create a ZIP archive containing one PDF for each source page."""
+    source = open_validated_pdf(data)
+    archive_buffer = io.BytesIO()
+    try:
+        with zipfile.ZipFile(archive_buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for page_index in range(source.page_count):
+                single_page = pymupdf.open()
+                try:
+                    single_page.insert_pdf(source, from_page=page_index, to_page=page_index)
+                    archive.writestr(
+                        f"page-{page_index + 1:03d}.pdf",
+                        single_page.tobytes(garbage=3, deflate=True),
+                    )
+                finally:
+                    single_page.close()
+        return archive_buffer.getvalue()
+    finally:
+        source.close()
