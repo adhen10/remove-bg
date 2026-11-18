@@ -1,11 +1,10 @@
 import json
 import logging
-import threading
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 
-from config import MAX_PDF_BYTES
+from utils.pdf_runtime import acquire_pdf_slot, read_pdf_upload
 from services.pdf_tools import (
     extract_pdf_pages,
     get_pdf_tool_catalog,
@@ -46,14 +45,13 @@ async def merge_pdfs(files: list[UploadFile] = File(...)):
     if len(files) < 2:
         raise HTTPException(status_code=400, detail="Pilih minimal 2 file PDF untuk digabungkan.")
 
-    if not _pdf_slots.acquire(blocking=False):
-        raise HTTPException(status_code=503, detail="Server sedang sibuk, coba lagi sebentar lagi.")
+    if not acquire_pdf_slot():
 
     try:
         payloads = []
         total_size = 0
         for uploaded in files:
-            data = await _read_pdf_upload(uploaded)
+            data = await read_pdf_upload(uploaded)
             total_size += len(data)
             if total_size > MAX_PDF_BYTES:
                 raise HTTPException(
@@ -74,7 +72,6 @@ async def merge_pdfs(files: list[UploadFile] = File(...)):
         logger.exception("PDF merge failed.")
         raise HTTPException(status_code=500, detail="Gagal menggabungkan PDF. Silakan coba lagi.") from exc
     finally:
-        _pdf_slots.release()
 
 
 @router.post("/rotate")
