@@ -12,6 +12,8 @@ from services.pdf_tools import (
     parse_page_ranges,
     split_pdf_pages,
     rotate_pdf_pages,
+    preview_pdf_pages,
+    organize_pdf_pages,
 )
 from utils.pdf_validation import open_validated_pdf
 
@@ -114,6 +116,34 @@ class PdfValidationTests(unittest.TestCase):
     def test_rotate_rejects_invalid_page_expression(self):
         with self.assertRaises(HTTPException):
             rotate_pdf_pages(make_pdf(2), 90, "3")
+
+    def test_organize_reorders_and_deletes_pages(self):
+        result = organize_pdf_pages(make_pdf(4), [3, 1, 4])
+        document = pymupdf.open(stream=result, filetype="pdf")
+        try:
+            self.assertEqual(document.page_count, 3)
+            self.assertIn("page-3", document[0].get_text())
+            self.assertIn("page-1", document[1].get_text())
+            self.assertIn("page-4", document[2].get_text())
+        finally:
+            document.close()
+
+    def test_organize_rejects_empty_order(self):
+        with self.assertRaises(HTTPException):
+            organize_pdf_pages(make_pdf(2), [])
+
+    def test_organize_rejects_duplicate_page(self):
+        with self.assertRaises(HTTPException):
+            organize_pdf_pages(make_pdf(2), [1, 1])
+
+    def test_organize_rejects_out_of_range_page(self):
+        with self.assertRaises(HTTPException):
+            organize_pdf_pages(make_pdf(2), [1, 3])
+
+    def test_preview_returns_thumbnail_for_each_page(self):
+        previews = preview_pdf_pages(make_pdf(3))
+        self.assertEqual(len(previews), 3)
+        self.assertTrue(previews[0]["thumbnail"].startswith("data:image/jpeg;base64,"))
 
     def test_split_creates_one_pdf_per_page(self):
         result = split_pdf_pages(make_pdf(3))
