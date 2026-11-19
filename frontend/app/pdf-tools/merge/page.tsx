@@ -91,7 +91,7 @@ export default function MergePdfPage() {
                     <div><h1 className="tool-topbar-title">Merge PDF</h1></div>
                 </header>
                 <section className="workspace-panel">
-                    <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2><p className="mt-1 text-sm text-[#879189]">Pilih beberapa PDF, lalu atur urutannya sebelum digabungkan.</p></div></div>
+                    <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2></div></div>
 
                     <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(event.dataTransfer.files); }} className={`w-full rounded-xl border border-dashed p-8 text-center transition ${dragging ? "border-[#4c8a5d] bg-[#f0f7f0]" : "border-[#cbd9cc] bg-[#fbfdfb] hover:border-[#7fa989]"}`}>
                         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#eaf3eb] text-xl text-[#397653]">＋</span>
