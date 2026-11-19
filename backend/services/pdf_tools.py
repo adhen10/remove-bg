@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 PDF_TOOL_CATALOG = [
     {"id": "merge", "name": "Merge PDF", "description": "Gabungkan beberapa dokumen PDF menjadi satu file.", "available": True, "href": "/pdf-tools/merge"},
     {"id": "split", "name": "Split & Extract PDF", "description": "Pisahkan PDF per halaman atau ambil halaman tertentu.", "available": True, "href": "/pdf-tools/split"},
-    {"id": "rotate", "name": "Rotate PDF", "description": "Putar halaman PDF sesuai orientasi yang dibutuhkan.", "available": True, "href": "/pdf-tools/rotate"},
     {"id": "organize", "name": "Organize PDF", "description": "Atur urutan halaman dan hapus halaman yang tidak diperlukan.", "available": True, "href": "/pdf-tools/organize"},
     {"id": "compress", "name": "Compress PDF", "description": "Kurangi ukuran file PDF.", "available": True, "href": "/compress-pdf"},
 ]
