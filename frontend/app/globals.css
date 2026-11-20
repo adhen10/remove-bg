@@ -2277,3 +2277,26 @@ body {
     transition: none;
   }
 }
+
+
+/* Shared PDF workspace visual language */
+.pdf-tool-panel { padding: 22px; border: 1px solid #e5ebe5; border-radius: 14px; background: #fff; box-shadow: 0 2px 10px rgba(32,54,38,.025); }
+.pdf-tool-dropzone { min-height: 210px; padding: 28px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px dashed #cbd9cc; border-radius:12px; background:#fbfdfb; text-align:center; cursor:pointer; transition:border-color .18s ease,background .18s ease; }
+.pdf-tool-dropzone:hover,.pdf-tool-dropzone.is-dragging { border-color:#7fa989; background:#f3f8f3; }
+.pdf-tool-icon { width:44px;height:44px;display:grid;place-items:center;border-radius:11px;background:#eaf3eb;color:#397653;font-size:21px; }
+.pdf-tool-file { display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e5ebe5;border-radius:10px;background:#fff; }
+.pdf-tool-file-icon { width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:8px;background:#f0f5f0;color:#588064;font-size:11px;font-weight:750; }
+.pdf-tool-file-name { overflow:hidden;color:#405247;font-size:12px;font-weight:650;text-overflow:ellipsis;white-space:nowrap; }
+.pdf-tool-file-meta { margin-top:3px;color:#929b94;font-size:10px; }
+.pdf-tool-button { min-height:38px;padding:0 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #347653;border-radius:8px;background:#347653;color:white;font-size:11px;font-weight:650;transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+.pdf-tool-button:hover:not(:disabled) { border-color:#285f42;background:#285f42; }
+.pdf-tool-button:active:not(:disabled) { transform:translateY(1px); }
+.pdf-tool-button:disabled { cursor:not-allowed;opacity:.42; }
+.pdf-tool-button-secondary { min-height:34px;padding:0 11px;border:1px solid #e0e6df;border-radius:7px;background:#fff;color:#66736a;font-size:10px;font-weight:650; }
+.pdf-tool-button-secondary:hover:not(:disabled) { background:#f8faf8;border-color:#cbd8cc; }
+.pdf-tool-alert { margin-top:14px;padding:11px 13px;border-radius:8px;font-size:11px; }
+.pdf-tool-alert-error { background:#fff4f2;color:#a34e45; }
+.pdf-tool-alert-success { background:#eff7ef;color:#397653; }
+.pdf-tool-field { width:100%;min-height:40px;padding:9px 11px;border:1px solid #dce5dc;border-radius:8px;background:#fff;color:#34463a;font-size:12px;outline:none; }
+.pdf-tool-field:focus { border-color:#78a585;box-shadow:0 0 0 2px #e4f0e5; }
+@media(max-width:640px){.pdf-tool-panel{padding:15px}.pdf-tool-dropzone{min-height:180px;padding:22px 14px}}
