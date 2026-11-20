@@ -150,14 +150,14 @@ export default function OrganizePdfPage() {
             <SiteHeader />
             <div className="workspace-main">
                 <header className="tool-topbar"><h1 className="tool-topbar-title">Organize PDF</h1></header>
-                <section className="workspace-panel">
+                <section className="workspace-panel pdf-tool-panel">
                     <button
                         type="button"
                         onClick={() => inputRef.current?.click()}
                         onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
                         onDragLeave={() => setDragging(false)}
                         onDrop={(event) => { event.preventDefault(); setDragging(false); void chooseFile(event.dataTransfer.files[0]); }}
-                        className={`w-full rounded-xl border border-dashed p-7 text-center transition ${dragging ? "border-[#4c8a5d] bg-[#f0f7f0]" : "border-[#cbd9cc] bg-[#fbfdfb] hover:border-[#7fa989]"}`}
+                        className={`pdf-tool-dropzone w-full ${dragging ? "is-dragging" : ""}`}
                     >
                         <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf3eb] text-xl text-[#397653]">＋</span>
                         <strong className="mt-3 block text-sm text-[#34463a]">{file ? "Ganti file PDF" : "Tarik PDF ke sini atau klik untuk memilih"}</strong>
@@ -232,7 +232,7 @@ export default function OrganizePdfPage() {
                     {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff4f2] p-3 text-xs text-[#a34e45]">{error}</p>}
                     {success && <p role="status" className="mt-4 rounded-lg bg-[#eff7ef] p-3 text-xs text-[#397653]">{success}</p>}
                     <div className="mt-6 flex justify-end">
-                        <button type="button" onClick={exportPdf} disabled={busy || loading || !file || order.length === 0} className="rounded-lg bg-[#347653] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#285f42] disabled:cursor-not-allowed disabled:opacity-40">{busy ? "Memproses..." : "Simpan PDF"}</button>
+                        <button type="button" onClick={exportPdf} disabled={busy || loading || !file || order.length === 0} className="pdf-tool-button disabled:cursor-not-allowed">{busy ? "Memproses..." : "Simpan PDF"}</button>
                     </div>
                 </section>
             </div>
