@@ -168,7 +168,7 @@ export default function OrganizePdfPage() {
                     {file && <div className="mt-4 flex items-center gap-3 rounded-lg border border-[#e5ebe5] bg-white p-3">
                         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#f0f5f0] text-xs font-bold text-[#588064]">PDF</span>
                         <span className="min-w-0 flex-1"><strong className="block truncate text-xs text-[#405247]">{file.name}</strong><small className="text-[10px] text-[#929b94]">{formatSize(file.size)} · {previews.length} halaman</small></span>
-                        <button type="button" onClick={() => { setFile(null); setPreviews([]); setOrder([]); setSelected([]); setRotations({}); setError(""); setSuccess(""); }} disabled={loading || busy} className="rounded-md px-3 py-2 text-xs font-semibold text-[#a34e45] hover:bg-[#fff4f2] disabled:opacity-40">Hapus file</button>
+                        <button type="button" onClick={() => { setFile(null); setPreviews([]); setOrder([]); setSelected([]); setRotations({}); setError(""); setSuccess(""); }} disabled={loading || busy} className="pdf-tool-button-secondary pdf-tool-danger disabled:opacity-40">Hapus file</button>
                     </div>}
 
                     {loading && <p className="py-10 text-center text-sm text-[#879189]">Memuat halaman...</p>}
@@ -176,15 +176,15 @@ export default function OrganizePdfPage() {
                     {previews.length > 0 && !loading && <>
                         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-3"><h2 className="text-sm font-semibold text-[#34463a]">Halaman</h2><span className="text-xs text-[#879189]">{order.length}/{previews.length}</span></div>
-                            <button type="button" onClick={() => { setOrder(previews.map((page) => page.page_number)); setSelected([]); setRotations({}); setError(""); setSuccess(""); }} className="rounded-md px-3 py-2 text-xs font-medium text-[#52765c] hover:bg-[#f1f6f1]">Reset</button>
+                            <button type="button" onClick={() => { setOrder(previews.map((page) => page.page_number)); setSelected([]); setRotations({}); setError(""); setSuccess(""); }} className="pdf-tool-muted-action">Reset</button>
                         </div>
 
                         <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-[#e5ebe5] bg-[#fbfdfb] p-3">
                             <span className="mr-1 text-xs font-medium text-[#526457]">{selected.length} dipilih</span>
-                            <button type="button" onClick={() => rotateSelected(270)} disabled={!selected.length || busy} className="rounded-md border border-[#dce5dc] bg-white px-3 py-2 text-xs font-medium text-[#405247] hover:bg-[#f3f7f3] disabled:opacity-40">↶ 90°</button>
-                            <button type="button" onClick={() => rotateSelected(90)} disabled={!selected.length || busy} className="rounded-md border border-[#dce5dc] bg-white px-3 py-2 text-xs font-medium text-[#405247] hover:bg-[#f3f7f3] disabled:opacity-40">↻ 90°</button>
-                            <button type="button" onClick={() => setSelected(order)} disabled={!order.length || busy} className="ml-auto rounded-md px-3 py-2 text-xs font-medium text-[#52765c] hover:bg-[#edf4ed]">Pilih semua</button>
-                            <button type="button" onClick={() => setSelected([])} disabled={!selected.length || busy} className="rounded-md px-3 py-2 text-xs font-medium text-[#718076] hover:bg-[#f1f4f1]">Batal pilih</button>
+                            <button type="button" onClick={() => rotateSelected(270)} disabled={!selected.length || busy} className="pdf-tool-button-secondary disabled:opacity-40">↶ 90°</button>
+                            <button type="button" onClick={() => rotateSelected(90)} disabled={!selected.length || busy} className="pdf-tool-button-secondary disabled:opacity-40">↻ 90°</button>
+                            <button type="button" onClick={() => setSelected(order)} disabled={!order.length || busy} className="pdf-tool-muted-action ml-auto">Pilih semua</button>
+                            <button type="button" onClick={() => setSelected([])} disabled={!selected.length || busy} className="pdf-tool-muted-action">Batal pilih</button>
                         </div>
 
                         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -207,7 +207,7 @@ export default function OrganizePdfPage() {
                                         <label className="flex items-center gap-2 text-[11px] text-[#718076]">Posisi
                                             <input type="number" min="1" max={order.length} value={index + 1} onChange={(event) => movePageToPosition(pageNumber, Number(event.target.value))} className="w-14 rounded-md border border-[#dce5dc] px-2 py-1.5 text-xs font-semibold text-[#34463a] outline-none focus:border-[#78a585]" aria-label={`Posisi halaman ${pageNumber}`} />
                                         </label>
-                                        <button type="button" onClick={() => removePage(pageNumber)} disabled={order.length === 1 || busy} className="rounded-md px-2 py-1.5 text-[11px] font-semibold text-[#a34e45] hover:bg-[#fff4f2] disabled:opacity-30">Hapus</button>
+                                        <button type="button" onClick={() => removePage(pageNumber)} disabled={order.length === 1 || busy} className="pdf-tool-button-secondary pdf-tool-danger disabled:opacity-30">Hapus</button>
                                     </div>
                                 </article>;
                             })}
@@ -229,8 +229,8 @@ export default function OrganizePdfPage() {
                         </section>
                     </>}
 
-                    {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff4f2] p-3 text-xs text-[#a34e45]">{error}</p>}
-                    {success && <p role="status" className="mt-4 rounded-lg bg-[#eff7ef] p-3 text-xs text-[#397653]">{success}</p>}
+                    {error && <p role="alert" className="pdf-tool-notice">{error}</p>}
+                    {success && <p role="status" className="pdf-tool-notice">{success}</p>}
                     <div className="mt-6 flex justify-end">
                         <button type="button" onClick={exportPdf} disabled={busy || loading || !file || order.length === 0} className="pdf-tool-button disabled:cursor-not-allowed">{busy ? "Memproses..." : "Simpan PDF"}</button>
                     </div>
