@@ -93,7 +93,7 @@ export default function MergePdfPage() {
                 <section className="workspace-panel pdf-tool-panel">
                     <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2></div></div>
 
-                    <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(event.dataTransfer.files); }} className={`w-full rounded-xl border border-dashed p-8 text-center transition ${dragging ? "border-[#4c8a5d] bg-[#f0f7f0]" : "border-[#cbd9cc] bg-[#fbfdfb] hover:border-[#7fa989]"}`}>
+                    <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(event.dataTransfer.files); }} className={`pdf-tool-dropzone w-full ${dragging ? "is-dragging" : ""}`}>
                         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#eaf3eb] text-xl text-[#397653]">＋</span>
                         <strong className="mt-3 block text-sm text-[#34463a]">Tarik PDF ke sini atau klik untuk memilih</strong>
                         <span className="mt-1 block text-xs text-[#929b94]">Pilih minimal 2 file · Maksimal total 200 MB</span>
