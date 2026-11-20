@@ -90,7 +90,7 @@ export default function MergePdfPage() {
                 <header className="tool-topbar">
                     <div><h1 className="tool-topbar-title">Merge PDF</h1></div>
                 </header>
-                <section className="workspace-panel">
+                <section className="workspace-panel pdf-tool-panel">
                     <div className="panel-heading"><div><h2 className="panel-title">Gabungkan dokumen PDF</h2></div></div>
 
                     <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addFiles(event.dataTransfer.files); }} className={`w-full rounded-xl border border-dashed p-8 text-center transition ${dragging ? "border-[#4c8a5d] bg-[#f0f7f0]" : "border-[#cbd9cc] bg-[#fbfdfb] hover:border-[#7fa989]"}`}>
@@ -111,7 +111,7 @@ export default function MergePdfPage() {
 
                     {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff4f2] p-3 text-xs text-[#a34e45]">{error}</p>}
                     {success && <p role="status" className="mt-4 rounded-lg bg-[#eff7ef] p-3 text-xs text-[#397653]">{success}</p>}
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-[#929b94]">File diproses sementara dan tidak disimpan sebagai dokumen akun.</p><button type="button" onClick={merge} disabled={busy || files.length < 2} className="rounded-lg bg-[#347653] px-5 py-3 text-xs font-semibold text-white transition hover:bg-[#285f42] disabled:cursor-not-allowed disabled:opacity-40">{busy ? "Menggabungkan..." : "Gabungkan PDF →"}</button></div>
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-[#929b94]">File diproses sementara dan tidak disimpan sebagai dokumen akun.</p><button type="button" onClick={merge} disabled={busy || files.length < 2} className="pdf-tool-button disabled:cursor-not-allowed">{busy ? "Menggabungkan..." : "Gabungkan PDF →"}</button></div>
                 </section>
             </div>
         </main>
