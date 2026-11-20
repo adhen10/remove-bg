@@ -109,6 +109,7 @@ async def preview_organize_pdf(file: UploadFile = File(...)):
 async def organize_pdf(
     file: UploadFile = File(...),
     page_order: str = Form(...),
+    page_rotations: str = Form("{}"),
     add_numbers: bool = Form(False),
     position: str = Form("bottom-center"),
     format_type: str = Form("number"),
@@ -126,7 +127,14 @@ async def organize_pdf(
             raise HTTPException(status_code=400, detail="Urutan halaman tidak valid.") from exc
         if not isinstance(order, list):
             raise HTTPException(status_code=400, detail="Urutan halaman harus berupa daftar nomor halaman.")
-        output = organize_pdf_pages(data, order)
+        try:
+            rotations_raw = json.loads(page_rotations)
+            if not isinstance(rotations_raw, dict):
+                raise ValueError("page_rotations must be an object")
+            rotations = {int(number): angle for number, angle in rotations_raw.items()}
+        except (TypeError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail="Pengaturan rotasi halaman tidak valid.") from exc
+        output = organize_pdf_pages(data, order, rotations)
         if add_numbers:
             output = add_pdf_page_numbers(output, position, format_type, start_number, start_page, font_size, margin)
         return Response(content=output, media_type="application/pdf",

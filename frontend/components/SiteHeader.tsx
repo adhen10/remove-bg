@@ -16,11 +16,10 @@ const GROUPS = [
     },
     {
         id: "pdf",
-        label: "PDF TOOLKIT",
+        label: "PDF TOOLS",
         items: [
             { href: "/pdf-tools/merge", label: "Merge PDF", icon: "merge" },
             { href: "/pdf-tools/split", label: "Split & Extract PDF", icon: "split" },
-            { href: "/pdf-tools/rotate", label: "Rotate PDF", icon: "rotate" },
             { href: "/pdf-tools/organize", label: "Organize PDF", icon: "organize" },
             { href: "/compress-pdf", label: "Compress PDF", icon: "compress" },
         ],

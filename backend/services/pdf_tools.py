@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 PDF_TOOL_CATALOG = [
     {"id": "merge", "name": "Merge PDF", "description": "Gabungkan beberapa dokumen PDF menjadi satu file.", "available": True, "href": "/pdf-tools/merge"},
     {"id": "split", "name": "Split & Extract PDF", "description": "Pisahkan PDF per halaman atau ambil halaman tertentu.", "available": True, "href": "/pdf-tools/split"},
-    {"id": "rotate", "name": "Rotate PDF", "description": "Putar halaman PDF sesuai orientasi yang dibutuhkan.", "available": True, "href": "/pdf-tools/rotate"},
     {"id": "organize", "name": "Organize PDF", "description": "Atur urutan halaman dan hapus halaman yang tidak diperlukan.", "available": True, "href": "/pdf-tools/organize"},
     {"id": "compress", "name": "Compress PDF", "description": "Kurangi ukuran file PDF.", "available": True, "href": "/compress-pdf"},
 ]
@@ -140,7 +139,7 @@ def preview_pdf_pages(data: bytes) -> list[dict[str, int | str]]:
         source.close()
 
 
-def organize_pdf_pages(data: bytes, page_order: list[int]) -> bytes:
+def organize_pdf_pages(data: bytes, page_order: list[int], page_rotations: dict[int, int] | None = None) -> bytes:
     """Rebuild a PDF in the supplied 1-based order; omitted pages are deleted."""
     source = open_validated_pdf(data)
     output = pymupdf.open()
@@ -153,8 +152,16 @@ def organize_pdf_pages(data: bytes, page_order: list[int]) -> bytes:
             raise HTTPException(status_code=400, detail="Nomor halaman tidak valid.")
         if len(set(page_order)) != len(page_order):
             raise HTTPException(status_code=400, detail="Halaman tidak boleh dipilih lebih dari satu kali.")
-        for number in page_order:
+        rotations = page_rotations or {}
+        if any(type(number) is not int or number not in page_order for number in rotations):
+            raise HTTPException(status_code=400, detail="Pilihan halaman rotasi tidak valid.")
+        if any(type(angle) is not int or angle not in {90, 180, 270} for angle in rotations.values()):
+            raise HTTPException(status_code=400, detail="Sudut rotasi harus 90, 180, atau 270 derajat.")
+        for position, number in enumerate(page_order):
             output.insert_pdf(source, from_page=number - 1, to_page=number - 1)
+            if number in rotations:
+                page = output[position]
+                page.set_rotation((page.rotation + rotations[number]) % 360)
         return output.tobytes(garbage=3, deflate=True)
     except HTTPException:
         raise
